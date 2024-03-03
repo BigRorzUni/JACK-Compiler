@@ -58,6 +58,7 @@ ParserInfo classDeclar()
 		pi = memberDeclar();
 		if(pi.er != none)
 			return pi;
+		t = PeekNextToken();
 	}
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 		printf("end of class\n");
@@ -178,20 +179,28 @@ ParserInfo subroutineDeclar()
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
 		printf("open paren detected\n");
-		pi = paramList();
-		if(pi.er != none)
-			return pi;
 	}
 	else
 		return (ParserInfo){openParenExpected, t};
 	
-	t = GetNextToken();
+	t = PeekNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 	{
 		printf("close paren detected\n");
+		t = GetNextToken();
 	}
 	else
-		return (ParserInfo){closeParenExpected, t};
+	{
+		pi = paramList();
+		if(pi.er != none)
+			return pi;
+		
+		t = GetNextToken();
+		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+			printf("close paren detected\n");
+		else
+			return (ParserInfo){closeParenExpected, t};
+	}
 	
 	pi = subroutineBody();
 	if(pi.er != none)
@@ -202,6 +211,7 @@ ParserInfo subroutineDeclar()
 
 ParserInfo subroutineBody()
 {
+	printf("subroutineBody detected\n");
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
@@ -216,6 +226,7 @@ ParserInfo subroutineBody()
 		if(pi.er != none)
 			return pi;
 	}
+
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
 		printf("close brace detected\n");
@@ -336,19 +347,124 @@ ParserInfo whileStatement()
 
 ParserInfo doStatement()
 {
+	printf("calling subroutine at line %i\n", t.ln);
+	pi = subroutineCall();
+	if(pi.er != none)
+		return pi;
+	
 	t = GetNextToken();
-	return (ParserInfo){syntaxError, t};
+	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
+		printf("semicolon detected\n");
+	else
+		return (ParserInfo){semicolonExpected, t};
+
+	return (ParserInfo){none, t};
 }
 
 ParserInfo subroutineCall()
 {
 	t = GetNextToken();
-	return (ParserInfo){syntaxError, t};
+	if(t.tp == ID)
+		printf("subroutineName detected\n");
+	else
+		return (ParserInfo){idExpected, t};
+	
+	t = PeekNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
+	{
+		t = GetNextToken();
+		if(t.tp == ID)
+			printf("subroutineName detected\n");
+		else
+			return (ParserInfo){idExpected, t};
+	}
+	
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
+	{
+		printf("open paren detected\n");
+	}
+	else
+		return (ParserInfo){openParenExpected, t};
+
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+		printf("close paren detected\n");
+	else
+	{
+		pi = expressionList();
+		if(pi.er != none)
+			return pi;
+		
+		t = GetNextToken();
+		if(t .tp == SYMBOL && strcmp(t.lx, ")") == 0)
+			printf("close paren detected\n");
+		else
+			return (ParserInfo){closeParenExpected, t};
+	}
+
+	return (ParserInfo){none, t};
+}
+
+ParserInfo paramList()
+{
+	printf("paramlist detected\n");
+	pi = type();
+	if(pi.er != none)
+		return pi;
+	t = GetNextToken();
+	if(t.tp == ID)
+		printf("paramName detected\n");
+	else
+		return (ParserInfo){idExpected, t};
+	
+	t = PeekNextToken();
+	while(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
+	{
+		t = GetNextToken();
+		pi = type();
+		if(pi.er != none)
+			return pi;
+		t = GetNextToken();
+		if(t.tp == ID)
+			printf("paramName detected\n");
+		else
+			return (ParserInfo){idExpected, t};
+		t = PeekNextToken();
+	}
+
+	printf("end of paramList\n");
+
+	return (ParserInfo){none, t};
+}
+
+
+ParserInfo expressionList()
+{
+	printf("expressionList detected\n");
+	pi = expression();
+	if(pi.er != none)
+		return pi;
+	
+	t = PeekNextToken();
+	while(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
+	{
+		t = GetNextToken();
+		pi = expression();
+		if(pi.er != none)
+			return pi;
+		t = PeekNextToken();
+	}
+
+	printf("end of expressionList\n");
+	
+	return (ParserInfo){none, t};
 }
 
 ParserInfo returnStatement()
 {
-	printf("return statement detected at line %i\n", t.ln);
+	printf("returning at line %i\n", t.ln);
 	t = PeekNextToken();
 
 	if(strcmp(t.lx, ";") != 0)
@@ -358,7 +474,6 @@ ParserInfo returnStatement()
 			return pi;
 	}
 
-	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 		printf("semicolon detected\n");
 	else
@@ -406,11 +521,11 @@ ParserInfo arithmeticExpression()
 	if(pi.er != none)
 		return pi;
 	
+	
 	t = PeekNextToken();
 	while(t.tp == SYMBOL && (strcmp(t.lx, "+") == 0 || strcmp(t.lx, "-") == 0))
 	{
 		printf("arithmetic operator detected\n");
-		t = GetNextToken();
 		pi = term();
 		if(pi.er != none)
 			return pi;
@@ -432,7 +547,6 @@ ParserInfo term()
 ParserInfo factor()
 {
 	printf("factor detected\n");
-	t = PeekNextToken();
 	if(t.tp == SYMBOL && (strcmp(t.lx, "-") == 0 || strcmp(t.lx, "~") == 0))
 	{
 		printf("unary operator detected\n");
@@ -450,6 +564,7 @@ ParserInfo operand()
 {
 	printf("operand detected\n");
 	t = GetNextToken();
+	printf("token: %s of type %i\n", t.lx, t.tp);
 	if(t.tp == INT)
 		printf("integer constant detected\n");
 	else if(t.tp == ID)
@@ -491,39 +606,20 @@ ParserInfo operand()
 	}
 	else if(t.tp == STRING)
 		printf("string detected");
-	
-	return (ParserInfo){none, t};
-}
-
-ParserInfo paramList()
-{
-	printf("paramlist detected\n");
-	pi = type();
-	if(pi.er != none)
-		return pi;
-	t = GetNextToken();
-	if(t.tp == ID)
-		printf("paramName detected\n");
+	else if (t.tp == RESWORD && strcmp(t.lx, "true") == 0)
+		printf("true detected\n");
+	else if (t.tp == RESWORD && strcmp(t.lx, "false") == 0)
+		printf("false detected\n");
+	else if (t.tp == RESWORD && strcmp(t.lx, "null") == 0)
+		printf("null detected\n");
+	else if (t.tp == RESWORD && strcmp(t.lx, "this") == 0)
+		printf("this detected\n");
 	else
-		return (ParserInfo){idExpected, t};
+		return (ParserInfo){syntaxError, t};
 	
-	t = PeekNextToken();
-	while(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
-	{
-		t = GetNextToken();
-		pi = type();
-		if(pi.er != none)
-			return pi;
-		t = GetNextToken();
-		if(t.tp == ID)
-			printf("paramName detected\n");
-		else
-			return (ParserInfo){idExpected, t};
-		t = PeekNextToken();
-	}
-
 	return (ParserInfo){none, t};
 }
+
 
 
 // MAIN FUNCTIONS
