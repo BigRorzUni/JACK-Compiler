@@ -5,7 +5,7 @@
 #include "lexer.h"
 #include "parser.h"
 
-// GLOBAL VARIABLES
+// GLOBsAL VARIABLES
 Token t;
 ParserInfo pi;
 
@@ -160,11 +160,10 @@ ParserInfo type()
 ParserInfo subroutineDeclar()
 {
 	t = GetNextToken();
-	printf("%s\n", t.lx);
-	if(t.tp == RESWORD && strcmp(t.lx, "void") == 0)
+	if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
 	{
 		t = GetNextToken();
-		printf("void detected\n");
+		printf("subroutine type detected\n");
 	}
 	else if (t.tp == ID)
 	{
@@ -373,8 +372,11 @@ ParserInfo subroutineCall()
 	if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 	{
 		t = GetNextToken();
+
+		t = GetNextToken();
+		
 		if(t.tp == ID)
-			printf("subroutineName detected\n");
+			printf(". subroutine detected\n");
 		else
 			return (ParserInfo){idExpected, t};
 	}
@@ -388,9 +390,13 @@ ParserInfo subroutineCall()
 		return (ParserInfo){openParenExpected, t};
 
 
-	t = GetNextToken();
+	t = PeekNextToken();
+	printf("current token is %s\n", t.lx);
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+	{
+		t = GetNextToken();
 		printf("close paren detected\n");
+	}
 	else
 	{
 		pi = expressionList();
@@ -426,6 +432,7 @@ ParserInfo paramList()
 		pi = type();
 		if(pi.er != none)
 			return pi;
+		printf("current token in param list is %s\n", t.lx);
 		t = GetNextToken();
 		if(t.tp == ID)
 			printf("paramName detected\n");
@@ -451,7 +458,9 @@ ParserInfo expressionList()
 	while(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
 	{
 		t = GetNextToken();
+		printf("current token in expression list is %s\n", t.lx);
 		pi = expression();
+		printf("next token in expression list is %s\n", t.lx);
 		if(pi.er != none)
 			return pi;
 		t = PeekNextToken();
@@ -472,6 +481,7 @@ ParserInfo returnStatement()
 		pi = expression();
 		if(pi.er != none)
 			return pi;
+		t = GetNextToken();
 	}
 
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
@@ -521,12 +531,18 @@ ParserInfo arithmeticExpression()
 	if(pi.er != none)
 		return pi;
 	
+	printf("current term is %s\n", t.lx);
 	
+	printf("token before operator is %s\n", t.lx);
+
 	t = PeekNextToken();
 	while(t.tp == SYMBOL && (strcmp(t.lx, "+") == 0 || strcmp(t.lx, "-") == 0))
 	{
-		printf("arithmetic operator detected\n");
+		
+		t = GetNextToken();
+		printf("arithmetic operator %s detected\n", t.lx);
 		pi = term();
+		printf("current term is %s\n", t.lx);
 		if(pi.er != none)
 			return pi;
 	}
@@ -547,6 +563,8 @@ ParserInfo term()
 ParserInfo factor()
 {
 	printf("factor detected\n");
+
+	t = PeekNextToken();
 	if(t.tp == SYMBOL && (strcmp(t.lx, "-") == 0 || strcmp(t.lx, "~") == 0))
 	{
 		printf("unary operator detected\n");
