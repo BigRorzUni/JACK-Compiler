@@ -686,12 +686,16 @@ ParserInfo operand()
 {
 	printf("operand detected\n");
 
-	t = GetNextToken();
+	t = PeekNextToken();
 	printf("token: %s of type %i\n", t.lx, t.tp);
 	if(t.tp == INT)
+	{
+		t = GetNextToken();
 		printf("integer constant detected\n");
+	}
 	else if(t.tp == ID)
 	{
+		t = GetNextToken();
 		printf("identifier");
 
 		t = PeekNextToken();
@@ -708,7 +712,7 @@ ParserInfo operand()
 			t = PeekNextToken();
 			if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
 			{
-				printf("open sqr bracket detected");
+				printf("open sqr bracket detected\n");
 				t = GetNextToken();
 
 				pi = expression();
@@ -736,18 +740,13 @@ ParserInfo operand()
 				else
 					return (ParserInfo){closeParenExpected, t};
 			}
-
-			// Check for either square brackets or parentheses next
-
-			// if square brackets then expression
-
-			// if parentheses then expressionList
 		}
 		else
 			printf(" detected\n");
 	}
 	else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
+		t = GetNextToken();
 		printf("open paren detected\n");
 
 		pi = expression();
@@ -762,15 +761,30 @@ ParserInfo operand()
 			return (ParserInfo){closeParenExpected, t};
 	}
 	else if(t.tp == STRING)
+	{
+		t = GetNextToken();
 		printf("string detected");
+	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "true") == 0)
+	{
+		t = GetNextToken();
 		printf("true detected\n");
+	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "false") == 0)
+	{
+		t = GetNextToken();
 		printf("false detected\n");
+	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "null") == 0)
+	{
+		t = GetNextToken();
 		printf("null detected\n");
+	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "this") == 0)
+	{
+		t = GetNextToken();
 		printf("this detected\n");
+	}
 	else
 		return (ParserInfo){syntaxError, t};
 	
