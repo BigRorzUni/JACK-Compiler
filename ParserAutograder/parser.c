@@ -407,7 +407,84 @@ ParserInfo ifStatement()
 		return (ParserInfo){syntaxError, t};
 	
 	t = GetNextToken();
-	return (ParserInfo){syntaxError, t};
+	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
+	{
+		printf("open paren detected\n");
+	}
+	else
+		return (ParserInfo){openParenExpected, t};
+	
+	pi = expression();
+	if(pi.er != none)
+		return pi;
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+		printf("close paren detected\n");
+	else
+		return (ParserInfo){closeParenExpected, t};
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
+	{
+		printf("open brace detected\n");
+	}
+	else
+		return (ParserInfo){openBraceExpected, t};
+	
+	t = PeekNextToken();
+	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
+	{
+		t = GetNextToken();
+
+		pi = statement();
+		if(pi.er != none)
+			return pi;
+		t = PeekNextToken();
+	}
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+		printf("close brace detected\n");
+	else
+		return (ParserInfo){closeBraceExpected, t};
+	
+	t = PeekNextToken();
+	if(t.tp == RESWORD && strcmp(t.lx, "else") == 0)
+	{
+		t = GetNextToken();
+		if(t.tp == RESWORD && strcmp(t.lx, "else") == 0)
+			printf("else detected\n");
+		else
+			return (ParserInfo){syntaxError, t};
+		
+		t = GetNextToken();
+		if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
+		{
+			printf("open brace detected\n");
+		}
+		else
+			return (ParserInfo){openBraceExpected, t};
+		
+		t = PeekNextToken();
+		while(t.tp != EOF && strcmp(t.lx, "}") != 0)
+		{
+			t = GetNextToken();
+
+			pi = statement();
+			if(pi.er != none)
+				return pi;
+			t = PeekNextToken();
+		}
+
+		t = GetNextToken();
+		if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+			printf("close brace detected\n");
+		else
+			return (ParserInfo){closeBraceExpected, t};
+	}
+
+	return (ParserInfo){none, t};
 }
 
 ParserInfo whileStatement()
