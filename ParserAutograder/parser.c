@@ -37,6 +37,10 @@ ParserInfo term(); // factor (( * | /) factor)*
 ParserInfo factor(); // (- | ~ | empty) operand
 ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expression ] | ( expressionList ))? | ( expression ) | stringConstant | true | false | null | this
 
+// HELPER FUNCTIONS
+
+ParserInfo CheckUnexpectedClose();
+
 // GRAMMAR IMPLEMENTATIONS
 ParserInfo classDeclar()
 {
@@ -58,7 +62,10 @@ ParserInfo classDeclar()
 		return (ParserInfo){idExpected, t};
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
+	{
+		openBraceCount++;
 		printf("open brace detected\n");
+	}
 	else
 		return (ParserInfo){openBraceExpected, t};
 	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
@@ -70,7 +77,10 @@ ParserInfo classDeclar()
 		t = PeekNextToken();
 	}
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+	{
+		openBraceCount--;
 		printf("end of class\n");
+	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
 		
@@ -249,6 +259,7 @@ ParserInfo subroutineBody()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
+		openBraceCount++;
 		printf("open brace detected\n");
 	}
 	else
@@ -267,6 +278,7 @@ ParserInfo subroutineBody()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
+		openBraceCount--;
 		printf("close brace detected\n");
 	}
 	else
@@ -386,6 +398,7 @@ ParserInfo letStatement()
 	t = PeekNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
 	{
+		openBracketCount++;
 		t = GetNextToken();
 
 		pi = expression();
@@ -394,7 +407,10 @@ ParserInfo letStatement()
 
 		t = GetNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
+		{
+			openBracketCount--;
 			printf("close bracket detected\n");
+		}
 		else
 			return (ParserInfo){closeBracketExpected, t};
 		
@@ -413,6 +429,11 @@ ParserInfo letStatement()
 		return (ParserInfo){equalExpected, t};
 
 	t = GetNextToken();
+
+	pi = CheckUnexpectedClose();
+	if(pi.er != none)
+		return pi;
+
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 		;//printf("semicolon detected\n");
 	else
@@ -454,6 +475,7 @@ ParserInfo ifStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
+		openBraceCount++;
 		printf("if open brace detected at line %i\n", t.ln);
 	}
 	else
@@ -472,7 +494,10 @@ ParserInfo ifStatement()
 
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+	{
+		openBraceCount--;
 		printf("if close brace detected at line %i\n", t.ln);
+	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
 	
@@ -488,6 +513,7 @@ ParserInfo ifStatement()
 		t = GetNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 		{
+			openBraceCount++;
 			printf("else open brace detected on line %i\n", t.ln);
 		}
 		else
@@ -511,7 +537,10 @@ ParserInfo ifStatement()
 		t = GetNextToken();
 		//printf("next token is %s on line %i\n", t.lx, t.ln);
 		if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+		{
+			openBraceCount--;
 			printf("else close brace detected on line %i\n", t.ln);
+		}
 		else
 			return (ParserInfo){closeBraceExpected, t};
 			
@@ -553,6 +582,7 @@ ParserInfo whileStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
+		openBraceCount++;
 		printf("while open brace detected at line %i\n", t.ln);
 	}
 	else
@@ -571,7 +601,10 @@ ParserInfo whileStatement()
 
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+	{
+		openBraceCount--;
 		printf("while close brace detected at line %i\n", t.ln);
+	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
 
@@ -593,6 +626,11 @@ ParserInfo doStatement()
 		return pi;
 	
 	t = GetNextToken();
+
+	pi = CheckUnexpectedClose();
+	if(pi.er != none)
+		return pi;
+
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 		printf("semicolon detected\n");
 	else
@@ -740,6 +778,11 @@ ParserInfo returnStatement()
 	}
 
 	t = GetNextToken();
+
+	pi = CheckUnexpectedClose();
+	if(pi.er != none)
+		return pi;
+
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 		printf("semicolon detected\n");
 	else
@@ -879,21 +922,6 @@ ParserInfo operand()
 		//printf("identifier");
 
 		t = PeekNextToken();
-		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0 && openParenCount == 0)
-		{
-			return (ParserInfo){syntaxError, t};
-		}
-		else if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0 && openBracketCount == 0)
-		{
-			printf("close bracket detected\n");
-			return (ParserInfo){none, t};
-		}
-		else if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0 && openBraceCount == 0)
-		{
-			printf("close brace detected\n");
-			return (ParserInfo){none, t};
-		}
-
 		printf("t is currently %s\n", t.lx);
 		if(t.tp == ID)
 			return (ParserInfo){syntaxError, t};
@@ -912,7 +940,8 @@ ParserInfo operand()
 		t = PeekNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
 		{
-			printf("open sqr bracket detected\n");
+			printf("open bracket detected\n");
+			openBracketCount++;
 			t = GetNextToken();
 
 			pi = expression();
@@ -921,7 +950,10 @@ ParserInfo operand()
 
 			t = GetNextToken();
 			if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
+			{
+				openBracketCount--;
 				printf("close sqr bracket detected\n");
+			}
 			else
 				return (ParserInfo){closeBracketExpected, t};
 		}
@@ -1006,7 +1038,15 @@ ParserInfo operand()
 	return (ParserInfo){syntaxError, t};
 }
 
+ParserInfo CheckUnexpectedClose()
+{
+	if(t.tp == SYMBOL && (strcmp(t.lx, ")") == 0 && openParenCount == 0) || (strcmp(t.lx, "]") == 0 && openBracketCount == 0) || (strcmp(t.lx, "}") == 0 && openBraceCount == 0))
+	{
+		return (ParserInfo){syntaxError, t};
+	}
 
+	return (ParserInfo){none, t};
+}
 
 // MAIN FUNCTIONS
 
@@ -1091,6 +1131,8 @@ int main(int argc, char *argv[])
     printf(pi.er == none ? "%s", ParseErrorString(pi.er) : "ERROR: %s", ParseErrorString(pi.er));
     printf("\nlast token read = [%d, \'%s\', ln: %i]\n", pi.tk.tp, pi.tk.lx, pi.tk.ln);
 	printf("number of unclosed parentheses = %i\n", openParenCount);
+	printf("number of unclosed brackets = %i\n", openBracketCount);
+	printf("number of unclosed braces = %i\n", openBraceCount);
 
     return 0;
 }

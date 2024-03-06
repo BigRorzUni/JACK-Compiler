@@ -2,134 +2,188 @@
 no errors :)
 last token read = [3, '}', ln: 203]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --Empty.jack--
 ERROR: keyword class expected
 last token read = [5, 'EOF', ln: 1]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --EofInComment.jack--
 ERROR: lexer error
 last token read = [6, 'Error: unexpected eof in comment', ln: 10]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --EofInStr.jack--
 ERROR: lexer error
 last token read = [6, 'Error: unexpected eof in string constant', ln: 2]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --Fraction.jack--
 no errors :)
 last token read = [3, '}', ln: 65]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --IllegalSymbol.jack--
 ERROR: lexer error
 last token read = [6, 'Error: illegal symbol in source file', ln: 2]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --List.jack--
 no errors :)
 last token read = [3, '}', ln: 46]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --Main.jack--
 no errors :)
 last token read = [3, '}', ln: 27]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --NewLineInStr.jack--
 ERROR: lexer error
 last token read = [6, 'Error: new line in string constant', ln: 1]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --PongGame.jack--
 no errors :)
 last token read = [3, '}', ln: 137]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --Square.jack--
 no errors :)
 last token read = [3, '}', ln: 108]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --SquareGame.jack--
 no errors :)
 last token read = [3, '}', ln: 76]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --classExpected.jack--
 ERROR: keyword class expected
 last token read = [1, 'clas', ln: 7]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --closeBracketExpected.jack--
 ERROR: ] expected
 last token read = [3, ';', ln: 19]
 number of unclosed parentheses = 0
+number of unclosed brackets = 1
+number of unclosed braces = 3
 
 --closeParenExpected.jack--
 ERROR: ) expected
 last token read = [3, '{', ln: 19]
 number of unclosed parentheses = 1
+number of unclosed brackets = 0
+number of unclosed braces = 1
 
 --closeParenExpected1.jack--
 ERROR: ) expected
 last token read = [3, ';', ln: 43]
 number of unclosed parentheses = 1
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --equalExpected.jack--
 ERROR: = expected
 last token read = [2, '0', ln: 27]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --idExpected.jack--
 ERROR: identifier expected
 last token read = [3, '{', ln: 11]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --idExpected2.jack--
 ERROR: identifier expected
 last token read = [3, '.', ln: 59]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --memberDeclarErr.jack--
 ERROR: class member declaration must begin with static, field, constructor , function , or method
 last token read = [1, 'lulu', ln: 27]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 1
 
 --openBraceExpected.jack--
 ERROR: { expected
 last token read = [0, 'field', ln: 8]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 0
 
 --openParenExpected.jack--
 ERROR: ( expected
 last token read = [0, 'false', ln: 52]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --semicolonExpected.jack--
 ERROR: ; expected
 last token read = [3, '}', ln: 27]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --semicolonExpected1.jack--
-ERROR: ; expected
+ERROR: any other kind of syntax error
 last token read = [3, ')', ln: 36]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --syntaxError.jack--
 ERROR: any other kind of syntax error
 last token read = [1, 'dx', ln: 96]
 number of unclosed parentheses = 1
+number of unclosed brackets = 0
+number of unclosed braces = 2
 
 --syntaxError1.jack--
 ERROR: any other kind of syntax error
 last token read = [3, ';', ln: 61]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 3
 
 --syntaxError2.jack--
 ERROR: any other kind of syntax error
 last token read = [3, ')', ln: 91]
 number of unclosed parentheses = 0
+number of unclosed brackets = 0
+number of unclosed braces = 3
 
