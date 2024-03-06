@@ -366,9 +366,11 @@ ParserInfo letStatement()
 	else
 		return (ParserInfo){idExpected, t};
 
-	t = GetNextToken();
+	t = PeekNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
 	{
+		t = GetNextToken();
+
 		pi = expression();
 		if(pi.er != none)
 			return pi;
@@ -378,8 +380,12 @@ ParserInfo letStatement()
 			printf("close bracket detected\n");
 		else
 			return (ParserInfo){closeBracketExpected, t};
+		
+		printf("current token is %s\n", t.lx);
 	}
-	else if(t.tp == SYMBOL && strcmp(t.lx, "=") == 0)
+	
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "=") == 0)
 	{
 		//printf("assignment detected\n");
 		pi = expression();
@@ -506,7 +512,49 @@ ParserInfo whileStatement()
 		return (ParserInfo){syntaxError, t};
 
 	t = GetNextToken();
-	return (ParserInfo){syntaxError, t};
+	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
+	{
+		//printf("if open paren detected\n");
+	}
+	else
+		return (ParserInfo){openParenExpected, t};
+	
+	pi = expression();
+	if(pi.er != none)
+		return pi;
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+		;//printf("if close paren detected\n");
+	else
+		return (ParserInfo){closeParenExpected, t};
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
+	{
+		printf("while open brace detected at line %i\n", t.ln);
+	}
+	else
+		return (ParserInfo){openBraceExpected, t};
+	
+	t = PeekNextToken();
+	printf("next token is %s\n", t.lx);
+	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
+	{
+		pi = statement();
+		if(pi.er != none)
+			return pi;
+
+		t = PeekNextToken();
+	}
+
+	t = GetNextToken();
+	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
+		printf("while close brace detected at line %i\n", t.ln);
+	else
+		return (ParserInfo){closeBraceExpected, t};
+
+	return (ParserInfo){none, t};
 }
 
 ParserInfo doStatement()
@@ -801,6 +849,7 @@ ParserInfo operand()
 		//printf("identifier");
 
 		t = PeekNextToken();
+		printf("t is currently %s\n", t.lx);
 		if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 		{
 			t = GetNextToken();
@@ -810,41 +859,41 @@ ParserInfo operand()
 				printf(".identifier detected\n");
 			else
 				return (ParserInfo){idExpected, t};
-			
-			t = PeekNextToken();
-			if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
-			{
-				printf("open sqr bracket detected\n");
-				t = GetNextToken();
-
-				pi = expression();
-				if(pi.er != none)
-					return pi;
-
-				t = GetNextToken();
-				if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
-					printf("close sqr bracket detected\n");
-				else
-					return (ParserInfo){closeBracketExpected, t};
-			}
-			else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
-			{
-				printf("open paren detected\n");
-				t = GetNextToken();
-
-				pi = expressionList();
-				if(pi.er != none)
-					return pi;
-
-				t = GetNextToken();
-				if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
-					printf("close paren detected\n");
-				else
-					return (ParserInfo){closeParenExpected, t};
-			}
 		}
 		else
 			;//printf(" detected\n");
+		t = PeekNextToken();
+		if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
+		{
+			printf("open sqr bracket detected\n");
+			t = GetNextToken();
+
+			pi = expression();
+			if(pi.er != none)
+				return pi;
+
+			t = GetNextToken();
+			if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
+				printf("close sqr bracket detected\n");
+			else
+				return (ParserInfo){closeBracketExpected, t};
+		}
+		else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
+		{
+			printf("open paren detected\n");
+			t = GetNextToken();
+
+			pi = expressionList();
+			if(pi.er != none)
+				return pi;
+
+			t = GetNextToken();
+			if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+				printf("close paren detected\n");
+			else
+				return (ParserInfo){closeParenExpected, t};
+		}
+
 	}
 	else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
@@ -963,16 +1012,21 @@ char* ParseErrorString (SyntaxErrors e)
 
 
 #ifndef TEST_PARSER
-int main ()
+int main(int argc, char *argv[])
 {
-	InitParser("Ball.jack");
+    if(argc < 2) {
+        printf("Please provide a file name.\n");
+        return 1;
+    }
 
-	ParserInfo pi = Parse();
+    InitParser(argv[1]);
 
-	printf("ERROR: %s\n", ParseErrorString(pi.er));
+    ParserInfo pi = Parse();
 
-	printf("[%d, \'%s\', ln: %i]\n", pi.tk.tp, pi.tk.lx, pi.tk.ln);
+	printf("--------------\n");
+    printf(pi.er == none ? "%s", ParseErrorString(pi.er) : "ERROR: %s", ParseErrorString(pi.er));
+    printf("\nlast token read = [%d, \'%s\', ln: %i]\n", pi.tk.tp, pi.tk.lx, pi.tk.ln);
 
-	return 0;
+    return 0;
 }
 #endif
