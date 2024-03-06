@@ -13,7 +13,7 @@ if [ $? -eq 0 ]; then
     do
         echo "--$file--" >> output.txt
         # Run the program on the file and append the last two lines of output to output.txt
-        ./parsertests "$file" | tail -n 2 >> output.txt
+        ./parsertests "$file" | tail -n 3 >> output.txt
         echo "" >> output.txt
     done
 else

@@ -8,7 +8,9 @@
 // GLOBsAL VARIABLES
 Token t;
 ParserInfo pi;
-int inBracket = 0;
+int openParenCount = 0;
+int openBracketCount = 0;
+int openBraceCount = 0;
 
 // GRAMMAR DECLARATIONS
 
@@ -202,6 +204,7 @@ ParserInfo subroutineDeclar()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
+		openParenCount++;
 		printf("open paren detected\n");
 	}
 	else
@@ -210,6 +213,7 @@ ParserInfo subroutineDeclar()
 	t = PeekNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 	{
+		openParenCount--;
 		printf("close paren detected\n");
 		t = GetNextToken();
 	}
@@ -224,7 +228,10 @@ ParserInfo subroutineDeclar()
 		
 		t = GetNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+		{
+			openParenCount--;
 			printf("close paren detected\n");
+		}
 		else
 			return (ParserInfo){closeParenExpected, t};
 	}
@@ -427,6 +434,7 @@ ParserInfo ifStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
+		openParenCount++;
 		//printf("if open paren detected\n");
 	}
 	else
@@ -438,7 +446,8 @@ ParserInfo ifStatement()
 
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
-		;//printf("if close paren detected\n");
+		openParenCount--;
+		//printf("if close paren detected\n");
 	else
 		return (ParserInfo){closeParenExpected, t};
 
@@ -524,6 +533,7 @@ ParserInfo whileStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
+		openParenCount++;
 		//printf("if open paren detected\n");
 	}
 	else
@@ -535,7 +545,8 @@ ParserInfo whileStatement()
 
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
-		;//printf("if close paren detected\n");
+		openParenCount--;
+		//printf("if close paren detected\n");
 	else
 		return (ParserInfo){closeParenExpected, t};
 
@@ -614,6 +625,7 @@ ParserInfo subroutineCall()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
+		openParenCount++;
 		printf("open paren detected\n");
 	}
 	else
@@ -625,6 +637,7 @@ ParserInfo subroutineCall()
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 	{
 		t = GetNextToken();
+		openParenCount--;
 		printf("close paren detected\n");
 	}
 	else
@@ -635,7 +648,10 @@ ParserInfo subroutineCall()
 		
 		t = GetNextToken();
 		if(t .tp == SYMBOL && strcmp(t.lx, ")") == 0)
+		{
+			openParenCount--;
 			printf("close paren detected\n");
+		}
 		else
 			return (ParserInfo){closeParenExpected, t};
 	}
@@ -848,6 +864,8 @@ ParserInfo operand()
 
 	t = PeekNextToken();
 	//printf("token: %s of type %i\n", t.lx, t.tp);
+
+
 	if(t.tp == INT)
 	{
 		t = GetNextToken();
@@ -856,10 +874,26 @@ ParserInfo operand()
 	}
 	else if(t.tp == ID) 
 	{
+		
 		t = GetNextToken();
 		//printf("identifier");
 
 		t = PeekNextToken();
+		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0 && openParenCount == 0)
+		{
+			return (ParserInfo){syntaxError, t};
+		}
+		else if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0 && openBracketCount == 0)
+		{
+			printf("close bracket detected\n");
+			return (ParserInfo){none, t};
+		}
+		else if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0 && openBraceCount == 0)
+		{
+			printf("close brace detected\n");
+			return (ParserInfo){none, t};
+		}
+
 		printf("t is currently %s\n", t.lx);
 		if(t.tp == ID)
 			return (ParserInfo){syntaxError, t};
@@ -894,6 +928,7 @@ ParserInfo operand()
 		else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 		{
 			printf("open paren detected\n");
+			openParenCount++;
 			t = GetNextToken();
 
 			t = PeekNextToken();
@@ -906,7 +941,10 @@ ParserInfo operand()
 
 			t = GetNextToken();
 			if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
+			{
+				openParenCount--;
 				printf("close paren detected\n");
+			}
 			else
 				return (ParserInfo){closeParenExpected, t};
 		}
@@ -916,6 +954,7 @@ ParserInfo operand()
 	else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
 		t = GetNextToken();
+		openParenCount++;
 		printf("open paren detected\n");
 
 		pi = expression();
@@ -924,8 +963,10 @@ ParserInfo operand()
 
 		t = GetNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
-
+		{
+			openParenCount--;
 			printf("close paren detected\n");
+		}
 		else
 			return (ParserInfo){closeParenExpected, t};
 		
@@ -1049,6 +1090,7 @@ int main(int argc, char *argv[])
 	printf("--------------\n");
     printf(pi.er == none ? "%s", ParseErrorString(pi.er) : "ERROR: %s", ParseErrorString(pi.er));
     printf("\nlast token read = [%d, \'%s\', ln: %i]\n", pi.tk.tp, pi.tk.lx, pi.tk.ln);
+	printf("number of unclosed parentheses = %i\n", openParenCount);
 
     return 0;
 }
