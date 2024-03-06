@@ -160,7 +160,7 @@ number of unclosed brackets = 0
 number of unclosed braces = 2
 
 --semicolonExpected1.jack--
-ERROR: any other kind of syntax error
+ERROR: ; expected
 last token read = [3, ')', ln: 36]
 number of unclosed parentheses = 0
 number of unclosed brackets = 0
@@ -181,7 +181,7 @@ number of unclosed brackets = 0
 number of unclosed braces = 3
 
 --syntaxError2.jack--
-ERROR: any other kind of syntax error
+ERROR: ; expected
 last token read = [3, ')', ln: 91]
 number of unclosed parentheses = 0
 number of unclosed brackets = 0

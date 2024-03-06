@@ -37,9 +37,6 @@ ParserInfo term(); // factor (( * | /) factor)*
 ParserInfo factor(); // (- | ~ | empty) operand
 ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expression ] | ( expressionList ))? | ( expression ) | stringConstant | true | false | null | this
 
-// HELPER FUNCTIONS
-
-ParserInfo CheckUnexpectedClose();
 
 // GRAMMAR IMPLEMENTATIONS
 ParserInfo classDeclar()
@@ -48,7 +45,7 @@ ParserInfo classDeclar()
 	if(t.tp == ERR)
 		return (ParserInfo){lexerErr, t};
 	if(t.tp == RESWORD && strcmp(t.lx, "class") == 0)
-		printf("class detected\n");
+		;//printf("class detected\n");
 	/*
 	else if (t.tp == EOFile) // not an error really if theres nothing in the file
 		return (ParserInfo){none, t};
@@ -57,14 +54,14 @@ ParserInfo classDeclar()
 		return (ParserInfo){classExpected, t};
 	t = GetNextToken();
 	if(t.tp == ID)
-		printf("className detected\n");
+		;//printf("className detected\n");
 	else
 		return (ParserInfo){idExpected, t};
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
 		openBraceCount++;
-		printf("open brace detected\n");
+		;//printf("open brace detected\n");
 	}
 	else
 		return (ParserInfo){openBraceExpected, t};
@@ -79,7 +76,7 @@ ParserInfo classDeclar()
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
 		openBraceCount--;
-		printf("end of class\n");
+		;//printf("end of class\n");
 	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
@@ -106,7 +103,7 @@ ParserInfo memberDeclar()
 	else if(t.tp == RESWORD && (strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0))
 	{
 	
-		printf("subroutineDeclar detected\n");
+		//printf("subroutineDeclar detected\n");
 		pi = subroutineDeclar();
 		if(pi.er != none)
 			return pi;
@@ -123,7 +120,7 @@ ParserInfo classVarDeclar()
 	t = GetNextToken();
 	if(t.tp == RESWORD && (strcmp(t.lx, "static") == 0 || strcmp(t.lx, "field") == 0))
 	{
-		printf("classVarDeclar detected\n");
+		//printf("classVarDeclar detected\n");
 	}
 	else
 		return (ParserInfo){classVarErr, t};
@@ -134,7 +131,7 @@ ParserInfo classVarDeclar()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		printf("identifier detected\n");
+		;//printf("identifier detected\n");
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -147,7 +144,7 @@ ParserInfo classVarDeclar()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				printf("varName detected\n");
+				;//printf("varName detected\n");
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -157,7 +154,7 @@ ParserInfo classVarDeclar()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 	{
-		printf("end of classVarDeclar\n");
+		//printf("end of classVarDeclar\n");
 		return (ParserInfo){none, t};
 	}
 	else
@@ -172,12 +169,12 @@ ParserInfo type()
 
 	if(t.tp == RESWORD && (strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
 	{
-		printf("primitive type detected\n");
+		//printf("primitive type detected\n");
 		return (ParserInfo){none, t};
 	}
 	else if(t.tp == ID)
 	{
-		printf("user-defined type detected\n");
+		//printf("user-defined type detected\n");
 		return (ParserInfo){none, t};
 	}
 	else
@@ -191,7 +188,7 @@ ParserInfo subroutineDeclar()
 	t = GetNextToken();
 	if(t.tp == RESWORD && (strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0))
 	{
-		printf("subroutineDeclar detected\n");
+		//printf("subroutineDeclar detected\n");
 	}
 	else
 		return (ParserInfo){subroutineDeclarErr, t};
@@ -200,7 +197,7 @@ ParserInfo subroutineDeclar()
 	if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
 	{
 		t = GetNextToken();
-		printf("subroutine type detected\n");
+		//printf("subroutine type detected\n");
 	}
 	else if (t.tp == ID)
 	{
@@ -215,7 +212,7 @@ ParserInfo subroutineDeclar()
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
 		openParenCount++;
-		printf("open paren detected\n");
+		//printf("open paren detected\n");
 	}
 	else
 		return (ParserInfo){openParenExpected, t};
@@ -224,7 +221,7 @@ ParserInfo subroutineDeclar()
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 	{
 		openParenCount--;
-		printf("close paren detected\n");
+		//printf("close paren detected\n");
 		t = GetNextToken();
 	}
 	else
@@ -240,7 +237,7 @@ ParserInfo subroutineDeclar()
 		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 		{
 			openParenCount--;
-			printf("close paren detected\n");
+			//printf("close paren detected\n");
 		}
 		else
 			return (ParserInfo){closeParenExpected, t};
@@ -255,12 +252,12 @@ ParserInfo subroutineDeclar()
 
 ParserInfo subroutineBody()
 {
-	printf("subroutineBody detected\n");
+	//printf("subroutineBody detected\n");
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
 		openBraceCount++;
-		printf("open brace detected\n");
+		//printf("open brace detected\n");
 	}
 	else
 		return (ParserInfo){openBraceExpected, t};
@@ -279,7 +276,7 @@ ParserInfo subroutineBody()
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
 		openBraceCount--;
-		printf("close brace detected\n");
+		//printf("close brace detected\n");
 	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
@@ -336,7 +333,7 @@ ParserInfo varDeclarStatement()
 	t = GetNextToken();
 	if(t.tp == RESWORD && strcmp(t.lx, "var") == 0)
 	{
-		printf("var declar statement detected\n");
+		//printf("var declar statement detected\n");
 	}
 	else
 		return (ParserInfo){syntaxError, t};
@@ -359,7 +356,7 @@ ParserInfo varDeclarStatement()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				printf("varName detected\n");
+				;//printf("varName detected\n");
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -369,7 +366,7 @@ ParserInfo varDeclarStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 	{
-		printf("end of varDeclar\n");
+		//printf("end of varDeclar\n");
 		return (ParserInfo){none, t};
 	}
 	else
@@ -409,12 +406,12 @@ ParserInfo letStatement()
 		if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
 		{
 			openBracketCount--;
-			printf("close bracket detected\n");
+			//printf("close bracket detected\n");
 		}
 		else
 			return (ParserInfo){closeBracketExpected, t};
 		
-		printf("current token is %s\n", t.lx);
+		//printf("current token is %s\n", t.lx);
 	}
 	
 	t = GetNextToken();
@@ -429,11 +426,6 @@ ParserInfo letStatement()
 		return (ParserInfo){equalExpected, t};
 
 	t = GetNextToken();
-
-	pi = CheckUnexpectedClose();
-	if(pi.er != none)
-		return pi;
-
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 		;//printf("semicolon detected\n");
 	else
@@ -447,7 +439,7 @@ ParserInfo ifStatement()
 	t = GetNextToken();
 	if(t.tp == RESWORD && strcmp(t.lx, "if") == 0)
 	{
-		printf("if statement detected at line %i\n", t.ln);
+		//printf("if statement detected at line %i\n", t.ln);
 	}
 	else
 		return (ParserInfo){syntaxError, t};
@@ -476,13 +468,13 @@ ParserInfo ifStatement()
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
 		openBraceCount++;
-		printf("if open brace detected at line %i\n", t.ln);
+		//printf("if open brace detected at line %i\n", t.ln);
 	}
 	else
 		return (ParserInfo){openBraceExpected, t};
 	
 	t = PeekNextToken();
-	printf("next token is %s\n", t.lx);
+	//printf("next token is %s\n", t.lx);
 	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
 	{
 		pi = statement();
@@ -496,7 +488,7 @@ ParserInfo ifStatement()
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
 		openBraceCount--;
-		printf("if close brace detected at line %i\n", t.ln);
+		//printf("if close brace detected at line %i\n", t.ln);
 	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
@@ -506,7 +498,7 @@ ParserInfo ifStatement()
 	{
 		t = GetNextToken();
 		if(t.tp == RESWORD && strcmp(t.lx, "else") == 0)
-			printf("else detected on line %i\n", t.ln);
+			;//printf("else detected on line %i\n", t.ln);
 		else
 			return (ParserInfo){syntaxError, t};
 		
@@ -514,7 +506,7 @@ ParserInfo ifStatement()
 		if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 		{
 			openBraceCount++;
-			printf("else open brace detected on line %i\n", t.ln);
+			//printf("else open brace detected on line %i\n", t.ln);
 		}
 		else
 			return (ParserInfo){openBraceExpected, t};
@@ -539,7 +531,7 @@ ParserInfo ifStatement()
 		if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 		{
 			openBraceCount--;
-			printf("else close brace detected on line %i\n", t.ln);
+			//printf("else close brace detected on line %i\n", t.ln);
 		}
 		else
 			return (ParserInfo){closeBraceExpected, t};
@@ -554,7 +546,7 @@ ParserInfo whileStatement()
 	t = GetNextToken();
 	if(t.tp == RESWORD && strcmp(t.lx, "while") == 0)
 	{
-		printf("while statement detected\n");
+		//printf("while statement detected\n");
 	}
 	else
 		return (ParserInfo){syntaxError, t};
@@ -583,13 +575,13 @@ ParserInfo whileStatement()
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 	{
 		openBraceCount++;
-		printf("while open brace detected at line %i\n", t.ln);
+		//printf("while open brace detected at line %i\n", t.ln);
 	}
 	else
 		return (ParserInfo){openBraceExpected, t};
 	
 	t = PeekNextToken();
-	printf("next token is %s\n", t.lx);
+	//printf("next token is %s\n", t.lx);
 	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
 	{
 		pi = statement();
@@ -603,7 +595,7 @@ ParserInfo whileStatement()
 	if(t.tp == SYMBOL && strcmp(t.lx, "}") == 0)
 	{
 		openBraceCount--;
-		printf("while close brace detected at line %i\n", t.ln);
+		//printf("while close brace detected at line %i\n", t.ln);
 	}
 	else
 		return (ParserInfo){closeBraceExpected, t};
@@ -616,7 +608,7 @@ ParserInfo doStatement()
 	t = GetNextToken();
 	if(t.tp == RESWORD && strcmp(t.lx, "do") == 0)
 	{
-		printf("do statement detected\n");
+		//printf("do statement detected\n");
 	}
 	else
 		return (ParserInfo){syntaxError, t};
@@ -626,13 +618,8 @@ ParserInfo doStatement()
 		return pi;
 	
 	t = GetNextToken();
-
-	pi = CheckUnexpectedClose();
-	if(pi.er != none)
-		return pi;
-
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
-		printf("semicolon detected\n");
+		;//printf("semicolon detected\n");
 	else
 		return (ParserInfo){semicolonExpected, t};
 
@@ -643,7 +630,7 @@ ParserInfo subroutineCall()
 {
 	t = GetNextToken();
 	if(t.tp == ID)
-		printf("subroutineName detected\n");
+		;//printf("subroutineName detected\n");
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -655,7 +642,7 @@ ParserInfo subroutineCall()
 		t = GetNextToken();
 		
 		if(t.tp == ID)
-			printf(". subroutine detected\n");
+			;//printf(". subroutine detected\n");
 		else
 			return (ParserInfo){idExpected, t};
 	}
@@ -664,19 +651,19 @@ ParserInfo subroutineCall()
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
 		openParenCount++;
-		printf("open paren detected\n");
+		//printf("open paren detected\n");
 	}
 	else
 		return (ParserInfo){openParenExpected, t};
 
 
 	t = PeekNextToken();
-	printf("current token is %s\n", t.lx);
+	//printf("current token is %s\n", t.lx);
 	if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 	{
 		t = GetNextToken();
 		openParenCount--;
-		printf("close paren detected\n");
+		//printf("close paren detected\n");
 	}
 	else
 	{
@@ -688,7 +675,7 @@ ParserInfo subroutineCall()
 		if(t .tp == SYMBOL && strcmp(t.lx, ")") == 0)
 		{
 			openParenCount--;
-			printf("close paren detected\n");
+			//printf("close paren detected\n");
 		}
 		else
 			return (ParserInfo){closeParenExpected, t};
@@ -699,7 +686,7 @@ ParserInfo subroutineCall()
 
 ParserInfo paramList()
 {
-	printf("paramlist detected\n");
+	//printf("paramlist detected\n");
 
 	pi = type();
 	if(pi.er != none)
@@ -707,7 +694,7 @@ ParserInfo paramList()
 
 	t = GetNextToken();
 	if(t.tp == ID)
-		printf("paramName detected\n");
+		;//printf("paramName detected\n");
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -719,25 +706,25 @@ ParserInfo paramList()
 		pi = type();
 		if(pi.er != none)
 			return pi;
-		printf("current token in param list is %s\n", t.lx);
+		//printf("current token in param list is %s\n", t.lx);
 
 		t = GetNextToken();
 		if(t.tp == ID)
-			printf("paramName detected\n");
+			;//printf("paramName detected\n");
 		else
 			return (ParserInfo){idExpected, t};
 
 		t = PeekNextToken();
 	}
 
-	printf("end of paramList\n");
+	//printf("end of paramList\n");
 
 	return (ParserInfo){none, t};
 }
 
 ParserInfo expressionList()
 {
-	printf("expressionList detected\n");
+	//printf("expressionList detected\n");
 
 	pi = expression();
 	if(pi.er != none)
@@ -747,7 +734,7 @@ ParserInfo expressionList()
 	while(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
 	{
 		t = GetNextToken();
-		printf("current token in expression list is %s\n", t.lx);
+		//printf("current token in expression list is %s\n", t.lx);
 
 		pi = expression();
 		if(pi.er != none)
@@ -756,7 +743,7 @@ ParserInfo expressionList()
 		t = PeekNextToken();
 	}
 
-	printf("end of expressionList\n");
+	//printf("end of expressionList\n");
 	
 	return (ParserInfo){none, t};
 }
@@ -765,7 +752,7 @@ ParserInfo returnStatement()
 {
 	t = GetNextToken();
 	if(t.tp == RESWORD && strcmp(t.lx, "return") == 0)
-		printf("return statement detected at line %i\n", t.ln);
+		;//printf("return statement detected at line %i\n", t.ln);
 	else
 		return (ParserInfo){syntaxError, t};
 	
@@ -778,13 +765,8 @@ ParserInfo returnStatement()
 	}
 
 	t = GetNextToken();
-
-	pi = CheckUnexpectedClose();
-	if(pi.er != none)
-		return pi;
-
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
-		printf("semicolon detected\n");
+		;//printf("semicolon detected\n");
 	else
 		return (ParserInfo){semicolonExpected, t};
 
@@ -890,7 +872,7 @@ ParserInfo factor()
 	t = PeekNextToken();
 	if(t.tp == SYMBOL && (strcmp(t.lx, "-") == 0 || strcmp(t.lx, "~") == 0))
 	{
-		printf("unary operator detected\n");
+		//printf("unary operator detected\n");
 		t = GetNextToken();
 	}
 
@@ -917,21 +899,18 @@ ParserInfo operand()
 	}
 	else if(t.tp == ID) 
 	{
-		
 		t = GetNextToken();
 		//printf("identifier");
 
 		t = PeekNextToken();
-		printf("t is currently %s\n", t.lx);
-		if(t.tp == ID)
-			return (ParserInfo){syntaxError, t};
+		//printf("t is currently %s\n", t.lx);
 		if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 		{
 			t = GetNextToken();
 
 			t = GetNextToken();
 			if(t.tp == ID)
-				printf(".identifier detected\n");
+				;//printf(".identifier detected\n");
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -940,7 +919,7 @@ ParserInfo operand()
 		t = PeekNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, "[") == 0)
 		{
-			printf("open bracket detected\n");
+			//printf("open bracket detected\n");
 			openBracketCount++;
 			t = GetNextToken();
 
@@ -952,14 +931,14 @@ ParserInfo operand()
 			if(t.tp == SYMBOL && strcmp(t.lx, "]") == 0)
 			{
 				openBracketCount--;
-				printf("close sqr bracket detected\n");
+				//printf("close sqr bracket detected\n");
 			}
 			else
 				return (ParserInfo){closeBracketExpected, t};
 		}
 		else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 		{
-			printf("open paren detected\n");
+			//printf("open paren detected\n");
 			openParenCount++;
 			t = GetNextToken();
 
@@ -975,7 +954,7 @@ ParserInfo operand()
 			if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 			{
 				openParenCount--;
-				printf("close paren detected\n");
+				//printf("close paren detected\n");
 			}
 			else
 				return (ParserInfo){closeParenExpected, t};
@@ -987,7 +966,7 @@ ParserInfo operand()
 	{
 		t = GetNextToken();
 		openParenCount++;
-		printf("open paren detected\n");
+		//printf("open paren detected\n");
 
 		pi = expression();
 		if(pi.er != none)
@@ -997,7 +976,7 @@ ParserInfo operand()
 		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
 		{
 			openParenCount--;
-			printf("close paren detected\n");
+			//printf("close paren detected\n");
 		}
 		else
 			return (ParserInfo){closeParenExpected, t};
@@ -1007,45 +986,35 @@ ParserInfo operand()
 	else if(t.tp == STRING)
 	{
 		t = GetNextToken();
-		printf("string detected");
+		//printf("string detected");
 		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "true") == 0)
 	{
 		t = GetNextToken();
-		printf("true detected\n");
+		//printf("true detected\n");
 		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "false") == 0)
 	{
 		t = GetNextToken();
-		printf("false detected\n");
+		//printf("false detected\n");
 		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "null") == 0)
 	{
 		t = GetNextToken();
-		printf("null detected\n");
+		//printf("null detected\n");
 		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "this") == 0)
 	{
 		t = GetNextToken();
-		printf("this detected\n");
+		//printf("this detected\n");
 		return (ParserInfo){none, t};
 	}
 
 	return (ParserInfo){syntaxError, t};
-}
-
-ParserInfo CheckUnexpectedClose()
-{
-	if(t.tp == SYMBOL && (strcmp(t.lx, ")") == 0 && openParenCount == 0) || (strcmp(t.lx, "]") == 0 && openBracketCount == 0) || (strcmp(t.lx, "}") == 0 && openBraceCount == 0))
-	{
-		return (ParserInfo){syntaxError, t};
-	}
-
-	return (ParserInfo){none, t};
 }
 
 // MAIN FUNCTIONS
