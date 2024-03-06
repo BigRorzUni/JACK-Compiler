@@ -38,8 +38,14 @@ ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expressi
 ParserInfo classDeclar()
 {
 	t = GetNextToken();
+	if(t.tp == ERR)
+		return (ParserInfo){lexerErr, t};
 	if(t.tp == RESWORD && strcmp(t.lx, "class") == 0)
 		printf("class detected\n");
+	/*
+	else if (t.tp == EOFile) // not an error really if theres nothing in the file
+		return (ParserInfo){none, t};
+	*/
 	else
 		return (ParserInfo){classExpected, t};
 	t = GetNextToken();
@@ -208,9 +214,12 @@ ParserInfo subroutineDeclar()
 	}
 	else
 	{
-		pi = paramList();
-		if(pi.er != none)
-			return pi;
+		if(t.tp == ID | (t.tp == RESWORD && strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
+		{
+			pi = paramList();
+			if(pi.er != none)
+				return pi;
+		}
 		
 		t = GetNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
@@ -843,7 +852,7 @@ ParserInfo operand()
 		t = GetNextToken();
 		//printf("integer constant detected\n");
 	}
-	else if(t.tp == ID)
+	else if(t.tp == ID) // HAVE TO FIX ID.ID()   
 	{
 		t = GetNextToken();
 		//printf("identifier");
