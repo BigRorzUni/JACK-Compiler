@@ -8,6 +8,7 @@
 // GLOBsAL VARIABLES
 Token t;
 ParserInfo pi;
+int inBracket = 0;
 
 // GRAMMAR DECLARATIONS
 
@@ -349,14 +350,14 @@ ParserInfo varDeclarStatement()
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, ";") == 0)
 	{
-		printf("end of classVarDeclar\n");
+		printf("end of varDeclar\n");
 		return (ParserInfo){none, t};
 	}
 	else
 		return (ParserInfo){semicolonExpected, t};
 	
 
-	return (ParserInfo){syntaxError, t};
+	return (ParserInfo){none, t};
 }
 
 ParserInfo letStatement()
@@ -719,7 +720,7 @@ ParserInfo returnStatement()
 	{
 		pi = expression();
 		if(pi.er != none)
-			return pi;
+			return (ParserInfo){semicolonExpected, t};
 	}
 
 	t = GetNextToken();
@@ -851,14 +852,17 @@ ParserInfo operand()
 	{
 		t = GetNextToken();
 		//printf("integer constant detected\n");
+		return (ParserInfo){none, t};
 	}
-	else if(t.tp == ID) // HAVE TO FIX ID.ID()   
+	else if(t.tp == ID) 
 	{
 		t = GetNextToken();
 		//printf("identifier");
 
 		t = PeekNextToken();
 		printf("t is currently %s\n", t.lx);
+		if(t.tp == ID)
+			return (ParserInfo){syntaxError, t};
 		if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 		{
 			t = GetNextToken();
@@ -892,9 +896,13 @@ ParserInfo operand()
 			printf("open paren detected\n");
 			t = GetNextToken();
 
-			pi = expressionList();
-			if(pi.er != none)
-				return pi;
+			t = PeekNextToken();
+			if(strcmp(t.lx, ")") != 0)
+			{
+				pi = expressionList();
+				if(pi.er != none)
+					return pi;
+			}
 
 			t = GetNextToken();
 			if(t.tp == SYMBOL && strcmp(t.lx, ")") == 0)
@@ -902,7 +910,8 @@ ParserInfo operand()
 			else
 				return (ParserInfo){closeParenExpected, t};
 		}
-
+		
+		return (ParserInfo){none, t};
 	}
 	else if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 	{
@@ -919,36 +928,41 @@ ParserInfo operand()
 			printf("close paren detected\n");
 		else
 			return (ParserInfo){closeParenExpected, t};
+		
+		return (ParserInfo){none, t};
 	}
 	else if(t.tp == STRING)
 	{
 		t = GetNextToken();
 		printf("string detected");
+		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "true") == 0)
 	{
 		t = GetNextToken();
 		printf("true detected\n");
+		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "false") == 0)
 	{
 		t = GetNextToken();
 		printf("false detected\n");
+		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "null") == 0)
 	{
 		t = GetNextToken();
 		printf("null detected\n");
+		return (ParserInfo){none, t};
 	}
 	else if (t.tp == RESWORD && strcmp(t.lx, "this") == 0)
 	{
 		t = GetNextToken();
 		printf("this detected\n");
+		return (ParserInfo){none, t};
 	}
-	else
-		return (ParserInfo){syntaxError, t};
-	
-	return (ParserInfo){none, t};
+
+	return (ParserInfo){syntaxError, t};
 }
 
 
