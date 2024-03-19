@@ -40,6 +40,55 @@ int StopCompiler ()
 	return 1;
 }
 
+char* ErrorString(SyntaxErrors e)
+{
+	{
+	switch(e)
+	{
+		case(lexerErr):
+			return "lexer error";
+		case(classExpected):
+			return "keyword class expected";
+		case(idExpected):
+			return "identifier expected";
+		case(openBraceExpected):
+			return "{ expected";
+		case(closeBraceExpected):
+			return "} expected";
+		case(memberDeclarErr):
+			return "class member declaration must begin with static, field, constructor , function , or method";
+		case(classVarErr):
+			return "class variables must begin with field or static";
+		case(illegalType):
+			return "a type must be int, char, boolean, or identifier";
+		case(semicolonExpected):
+			return "; expected";
+		case(subroutineDeclarErr):
+			return "subrouting declaration must begin with constructor, function, or method";
+		case(openParenExpected):
+			return "( expected";
+		case(closeParenExpected):
+			return ") expected";
+		case(closeBracketExpected):
+			return "] expected";
+		case(equalExpected):
+			return "= expected";
+		case(syntaxError):
+			return "any other kind of syntax error";
+		default:
+			return "no errors :)";
+	}
+}
+}
+
+void PrintError(ParserInfo p)
+{
+	if (p.er == none)
+		printf ("No errors\n");
+	else
+		printf ("Error in file %s line %i at or near %s: %s\n" , p.tk.fl , p.tk.ln , p.tk.lx , ErrorString(p.er));
+}
+
 
 #ifndef TEST_COMPILER
 int main ()
