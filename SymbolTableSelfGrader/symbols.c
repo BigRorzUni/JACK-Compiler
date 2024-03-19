@@ -9,63 +9,46 @@ I confirm that the following code has been developed and written by me and it is
 I also confirm that I have not copied any parts of this program from another person or any other source or facilitated someone to copy this program from me.
 I confirm that I will not publish the program online or share it with anyone without permission of the module leader.
 
-Student Name:
-Student ID:
-Email:
-Date Work Commenced:
+Student Name: Rory Edmonds
+Student ID: 201508877
+Email: sc22re@leeds.ac.uk
+Date Work Commenced: 19/03/2024
 *************************************************************************/
 
 #include "symbols.h"
 
-Symbol St[100];  // symbol table
-int ns; // number of symbols in the table
-int addressCounter;
+SymbolTable* head = NULL;
 
-void InsertSymbol(char* name, DataTypes type)
-{
-	strcpy (St[ns].name , name);
-	St[ns].type = type;
-	St[ns].address = addressCounter++;
-	ns++;
+void PushSymbolTable() {
+    SymbolTable* newTable = malloc(sizeof(SymbolTable));
+    newTable->ns = 0;
+    newTable->addressCounter = 0;
+    newTable->next = head;
+    head = newTable;
 }
 
-int FindSymbol(char* name)
-{
-	for (int i = 0; i < ns; i++)
-	{
-		if (!strcmp(St[i].name, name))
-		{
-			return i; //Return idnex
-		}
-
-	}
-	return -1; //Index was not found
+void PopSymbolTable() {
+    SymbolTable* oldHead = head;
+    head = head->next;
+    free(oldHead);
 }
 
-void InitSymbolTable()
-{
-	ns = 0;
-	addressCounter = 0;
+void InsertSymbol(char* name, DataTypes type) {
+    strcpy(head->symbols[head->ns].name, name);
+    head->symbols[head->ns].type = type;
+    head->symbols[head->ns].address = head->addressCounter++;
+    head->ns++;
 }
 
-const char* DataTypeToString(DataTypes t)
-{
-	if (t == banana)
-		return "banana";
-	else if (t == bapple)
-		return "bapple";
-	else if (t == gelato)
-		return "gelato";
-	else return "unknown data type";
-}
-void PrintAllSymbols()
-{
-	printf("\n\nThe symbols of this program:\n");
-	for (int i = 0; i < ns; i++)
-		printf("%s: %s, %i\n", St[i].name, DataTypeToString(St[i].type), St[i].address);
-}
-
-int GetAddress(int r) // return the memory adress of the symbol given by its index r withing the symbol table
-{
-	return St[r].address;
+int FindSymbol(char* name) {
+    SymbolTable* currentTable = head;
+    while (currentTable != NULL) {
+        for (int i = 0; i < currentTable->ns; i++) {
+            if (strcmp(currentTable->symbols[i].name, name) == 0) {
+                return i;
+            }
+        }
+        currentTable = currentTable->next;
+    }
+    return -1;
 }

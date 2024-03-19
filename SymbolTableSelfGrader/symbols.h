@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 // define your own types and function prototypes for the symbol table(s) module below
-typedef enum {banana , gelato, bapple} DataTypes;
+typedef enum {INT, CHAR, BOOL, IDENTIFIER} DataTypes;
 
 typedef struct {
 	char name[128];
@@ -15,12 +15,18 @@ typedef struct {
 	int address;
 } Symbol;
 
+typedef struct SymbolTable {
+    Symbol symbols[100];
+    int ns;
+    int addressCounter;
+    struct SymbolTable* next;
+} SymbolTable;
 
+extern SymbolTable* head;
+
+void PushSymbolTable();
+void PopSymbolTable();
 void InsertSymbol(char* name, DataTypes type);
-int FindSymbol(char* name); // returns the index of the symbol if found, otherwise returns -1 !!!
-void InitSymbolTable();
-void PrintAllSymbols();
-int GetAddress(int);
-
+int FindSymbol(char* name);
 
 #endif
