@@ -17,38 +17,45 @@ Date Work Commenced: 19/03/2024
 
 #include "symbols.h"
 
-SymbolTable* head = NULL;
+SymbolTable* root = NULL;
 
-void PushSymbolTable() {
-    SymbolTable* newTable = malloc(sizeof(SymbolTable));
-    newTable->ns = 0;
-    newTable->addressCounter = 0;
-    newTable->next = head;
-    head = newTable;
+SymbolTable* CreateSymbolTableNode(SymbolTable* parent) {
+    SymbolTable* newNode = malloc(sizeof(SymbolTable));
+    newNode->ns = 0;
+    newNode->addressCounter = 0;
+    newNode->parent = parent;
+    newNode->children = NULL;
+    newNode->childCount = 0;
+    return newNode;
 }
 
-void PopSymbolTable() {
-    SymbolTable* oldHead = head;
-    head = head->next;
-    free(oldHead);
+void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child) {
+    parent->children = realloc(parent->children, sizeof(SymbolTable*) * (parent->childCount + 1));
+    parent->children[parent->childCount] = child;
+    parent->childCount++;
 }
 
-void InsertSymbol(char* name, DataTypes type) {
-    strcpy(head->symbols[head->ns].name, name);
-    head->symbols[head->ns].type = type;
-    head->symbols[head->ns].address = head->addressCounter++;
-    head->ns++;
+void InsertSymbol(SymbolTable* node, char* name, DataTypes type) {
+    strcpy(node->symbols[node->ns].name, name);
+    node->symbols[node->ns].type = type;
+    node->symbols[node->ns].address = node->addressCounter++;
+    node->ns++;
 }
 
-int FindSymbol(char* name) {
-    SymbolTable* currentTable = head;
-    while (currentTable != NULL) {
-        for (int i = 0; i < currentTable->ns; i++) {
-            if (strcmp(currentTable->symbols[i].name, name) == 0) {
-                return i;
-            }
+int FindSymbol(SymbolTable* node, char* name) {
+    if (node == NULL) {
+        return -1;
+    }
+    for (int i = 0; i < node->ns; i++) {
+        if (strcmp(node->symbols[i].name, name) == 0) {
+            return i;
         }
-        currentTable = currentTable->next;
+    }
+    for (int i = 0; i < node->childCount; i++) {
+        int childResult = FindSymbol(node->children[i], name);
+        if (childResult != -1) {
+            return childResult;
+        }
     }
     return -1;
 }

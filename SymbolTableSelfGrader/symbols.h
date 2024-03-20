@@ -19,7 +19,9 @@ typedef struct SymbolTable {
     Symbol symbols[100];
     int ns;
     int addressCounter;
-    struct SymbolTable* next;
+    struct SymbolTable* parent;
+    struct SymbolTable** children;
+    int childCount;
 } SymbolTable;
 
 extern SymbolTable* head;
