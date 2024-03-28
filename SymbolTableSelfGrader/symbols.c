@@ -19,7 +19,8 @@ Date Work Commenced: 19/03/2024
 
 SymbolTable* root = NULL;
 
-SymbolTable* CreateSymbolTableNode(SymbolTable* parent) {
+SymbolTable* CreateSymbolTable(SymbolTable* parent) 
+{
     SymbolTable* newNode = malloc(sizeof(SymbolTable));
     newNode->ns = 0;
     newNode->addressCounter = 0;
@@ -29,33 +30,86 @@ SymbolTable* CreateSymbolTableNode(SymbolTable* parent) {
     return newNode;
 }
 
-void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child) {
-    parent->children = realloc(parent->children, sizeof(SymbolTable*) * (parent->childCount + 1));
-    parent->children[parent->childCount] = child;
+void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child) 
+{
+    SymbolTable** newChildren = malloc(sizeof(SymbolTable*) * (parent->childCount + 1));
+    for (int i = 0; i < parent->childCount; i++) 
+    {
+        newChildren[i] = parent->children[i];
+    }
+    newChildren[parent->childCount] = child;
+    free(parent->children);
+    parent->children = newChildren;
     parent->childCount++;
 }
 
-void InsertSymbol(SymbolTable* node, char* name, DataTypes type) {
-    strcpy(node->symbols[node->ns].name, name);
-    node->symbols[node->ns].type = type;
-    node->symbols[node->ns].address = node->addressCounter++;
-    node->ns++;
+void InsertSymbol(SymbolTable* st, char* name, SymbolKinds sKind) 
+{
+    strcpy(st->symbols[st->ns].name, name);
+    st->symbols[st->ns].sKind = sKind;
+    st->symbols[st->ns].address = st->addressCounter++;
+    st->ns++;
 }
 
-int FindSymbol(SymbolTable* node, char* name) {
-    if (node == NULL) {
+int FindSymbol(SymbolTable* st, char* name) 
+{
+    if (st == NULL) {
         return -1;
     }
-    for (int i = 0; i < node->ns; i++) {
-        if (strcmp(node->symbols[i].name, name) == 0) {
+    for (int i = 0; i < st->ns; i++) {
+        if (strcmp(st->symbols[i].name, name) == 0) 
+        {
             return i;
         }
     }
-    for (int i = 0; i < node->childCount; i++) {
-        int childResult = FindSymbol(node->children[i], name);
+    for (int i = 0; i < st->childCount; i++) 
+    {
+        int childResult = FindSymbol(st->children[i], name);
         if (childResult != -1) {
             return childResult;
         }
     }
     return -1;
+}
+
+char* SymbolKindString(SymbolKinds sKind) 
+{
+    switch (sKind) 
+    {
+        case METHOD: return "METHOD";
+        case CLASS: return "CLASS";
+        case VARIABLE: return "VARIABLE";
+        case TYPE: return "TYPE";
+    }
+    return "UNKNOWN";
+}
+
+
+void PrintSymbolTable(SymbolTable* st) 
+{
+    if (st == NULL) 
+    {
+        return;
+    }
+
+    printf("SYMBOL TABLE:\n");
+    printf("num symbols: %d\n", st->ns);
+    printf("addressCounter: %d\n", st->addressCounter);
+    printf("childCount: %d\n", st->childCount);
+    
+
+    for (int i = 0; i < st->ns; i++) 
+    {
+        printf("-----------------------\n");
+        printf("Symbol %d:\n", i);
+        printf("name: %s\n", st->symbols[i].name);
+        printf("symbol kind: %s\n", SymbolKindString(st->symbols[i].sKind));
+        printf("address: %d\n", st->symbols[i].address);
+    }
+
+    for (int i = 0; i < st->childCount; i++) 
+    {
+        printf("\n***********************\n\n");
+        PrintSymbolTable(st->children[i]);
+    }
 }

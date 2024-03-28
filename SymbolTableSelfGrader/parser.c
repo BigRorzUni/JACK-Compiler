@@ -4,10 +4,12 @@
 
 #include "lexer.h"
 #include "parser.h"
+#include "symbols.h"
 
 // GLOBsAL VARIABLES
 Token t;
 ParserInfo pi;
+SymbolTable* st;
 
 // GRAMMAR DECLARATIONS
 
@@ -34,6 +36,39 @@ ParserInfo term(); // factor (( * | /) factor)*
 ParserInfo factor(); // (- | ~ | empty) operand
 ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expression ] | ( expressionList ))? | ( expression ) | stringConstant | true | false | null | this
 
+
+void addSymbol(char* name)
+{
+	printf("Symbol %s added at line %d\n", name, t.ln);
+	/*
+	SymbolTable* st = head;
+	while(st->parent != NULL)
+		st = st->parent;
+
+	InsertSymbol(st, name, type);
+	*/
+}
+
+void findSymbol(char* name)
+{
+	printf("Searching for symbol %s found at line %d\n", name, t.ln);
+	/*
+	SymbolTable* st = head;
+	while(st->parent != NULL)
+		st = st->parent;
+
+	return FindSymbol(st, name);
+	*/
+}
+
+void addSymbolTable()
+{
+	printf("New symbol table added at line %d for identifer %s\n", t.ln, t.lx);
+	/*
+	SymbolTable* st = CreateSymbolTableNode(head);
+	AddChildSymbolTable(head, st);
+	*/
+}
 
 // GRAMMAR IMPLEMENTATIONS
 ParserInfo classDeclar()
@@ -109,7 +144,7 @@ ParserInfo classVarDeclar()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+		addSymbol(t.lx);
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -134,6 +169,8 @@ ParserInfo classVarDeclar()
 		;
 	else
 		return (ParserInfo){semicolonExpected, t};
+
+	
 
 	return (ParserInfo){none, t};
 }
@@ -160,9 +197,11 @@ ParserInfo subroutineDeclar()
 		t = GetNextToken();
 	else if (t.tp == ID)
 	{
+		addSymbol(t.lx);
 		pi = type();
 		if(pi.er != none)
 			return pi;
+		
 	}
 	else
 		return (ParserInfo){illegalType, t};
@@ -842,6 +881,10 @@ ParserInfo operand()
 int InitParser (char* file_name)
 {
 	InitLexer(file_name);
+
+	// create program wide symbol table
+	st = CreateSymbolTable(root);
+	AddChildSymbolTable(root, st);
 
 	return 0;
 }
