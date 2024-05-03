@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Create an array of files to zip
+files=()
+
+# Add all .c files to the array
+for file in *.c; do
+    if [[ "$file" != "SymbolGrader.c" ]]; then
+        files+=("$file")
+    fi
+done
+
+# Add all .h files to the array, excluding lexer.h and parser.h
+for file in *.h; do
+    if [[ "$file" != "lexer.h" && "$file" != "parser.h" ]]; then
+        files+=("$file")
+    fi
+done
+
+# Zip the files
+zip source_files.zip "${files[@]}"

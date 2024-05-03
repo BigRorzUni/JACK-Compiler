@@ -68,34 +68,9 @@ ParserInfo compile (char* dir_name)
         return p;
     }
 
-	printf("\n\nADDING CLASSES TO PROGRAM WIDE SYMBOL TABLE\n\n");
-
 	root = CreateSymbolTable(NULL);
 
-    while ((entry = readdir(dir)) != NULL) 
-	{
-		
-
-       	char *ext = strrchr(entry->d_name, '.');
-		if (ext != NULL && strcmp(ext, ".jack") == 0) 
-		{
-			// This is a .jack file
-			char fileName[1024];
-			strncpy(fileName, entry->d_name, ext - entry->d_name);
-			fileName[ext - entry->d_name] = '\0'; // Null terminate the string
-			
-			InsertSymbol(root, fileName, CLASS);
-			
-		}
-    }
-
-	PrintSymbolTable(root);
-
-
- 	// Rewind the directory stream to start
-    rewinddir(dir);
-
-	printf("\n\nPARSING EACH FILE\n\n\n");
+	printf("\n\nSHALLOW PARSING EACH FILE\n\n\n");
 
 	// Parse each file
     while ((entry = readdir(dir)) != NULL) {
@@ -104,17 +79,21 @@ ParserInfo compile (char* dir_name)
 		{
             char filePath[1024];
             snprintf(filePath, sizeof(filePath), "%s/%s", dir_name, entry->d_name);
+			printf("Shallow Parsing %s\n", filePath);
+			ShallowPass(filePath, root);
             // Assuming InitParser and Parse are functions that take a file path as argument
-            InitParser(filePath);
+            //InitParser(filePath);
             //Parse();
+			printf("\n\n");
         }
     }
 
     closedir(dir);
 
+
 	PrintSymbolTable(root);
 
-	printf("\n\nPARSING COMPLETE\n\n");
+	printf("\n\nSHALLOW PARSING COMPLETE\n\n");
 
 	// write your code below
 
@@ -139,7 +118,7 @@ int StopCompiler ()
 	return 1;
 }
 
-char* ErrorString(SyntaxErrors e)
+char* GetErrorString(SyntaxErrors e)
 {
 	{
 	switch(e)
@@ -180,12 +159,12 @@ char* ErrorString(SyntaxErrors e)
 }
 }
 
-void PrintError(ParserInfo p)
+void OutputError(ParserInfo p)
 {
 	if (p.er == none)
 		printf ("No errors\n");
 	else
-		printf ("Error in file %s line %i at or near %s: %s\n" , p.tk.fl , p.tk.ln , p.tk.lx , ErrorString(p.er));
+		printf ("Error in file %s line %i at or near %s: %s\n" , p.tk.fl , p.tk.ln , p.tk.lx , GetErrorString(p.er));
 }
 
 
@@ -194,7 +173,7 @@ int main ()
 {
 	InitCompiler ();
 	ParserInfo p = compile ("Pong");
-	PrintError (p);
+	OutputError (p);
 	StopCompiler ();
 	return 1;
 }

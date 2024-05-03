@@ -8,33 +8,37 @@
 #include <stdlib.h>
 
 // define your own types and function prototypes for the symbol table(s) module below
-//typedef enum {INTEGER, CHARACTER, BOOLEAN, IDENTIFIER} DataTypes;
 
-typedef enum {METHOD, CLASS, VARIABLE, TYPE} SymbolKinds;
+typedef enum {METHOD, CLASS, CLASS_VAR, VAR, OBJECT} SymbolType;
+
+typedef struct SymbolTable SymbolTable;
 
 typedef struct {
-	char name[128];
-    SymbolKinds sKind;
+	Token token;
+    SymbolType sType;
 	int address;
+    SymbolTable* scope;
 } Symbol;
 
-typedef struct SymbolTable {
+struct SymbolTable {
     Symbol symbols[100];
     int ns;
     int addressCounter;
     struct SymbolTable* parent;
-    struct SymbolTable** children;
-    int childCount;
-} SymbolTable;
+};
+
+
 
 extern SymbolTable* root;
 
 SymbolTable* CreateSymbolTable(SymbolTable* parent);
 void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child);
 
-void InsertSymbol(SymbolTable* st, char* name, SymbolKinds sKind);
-int FindSymbol(SymbolTable* st, char* name);
+void InsertSymbol(SymbolTable* st, Token t, SymbolTable* scope, SymbolType sType);
+int FindSymbol(SymbolTable* st, Token t);
 
 void PrintSymbolTable(SymbolTable* st);
+
+void ShallowPass(char* filename, SymbolTable* st);
 
 #endif

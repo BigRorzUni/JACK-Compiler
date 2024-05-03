@@ -25,65 +25,53 @@ SymbolTable* CreateSymbolTable(SymbolTable* parent)
     newNode->ns = 0;
     newNode->addressCounter = 0;
     newNode->parent = parent;
-    newNode->children = NULL;
-    newNode->childCount = 0;
     return newNode;
 }
 
-void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child) 
-{
-    SymbolTable** newChildren = malloc(sizeof(SymbolTable*) * (parent->childCount + 1));
-    for (int i = 0; i < parent->childCount; i++) 
-    {
-        newChildren[i] = parent->children[i];
-    }
-    newChildren[parent->childCount] = child;
-    free(parent->children);
-    parent->children = newChildren;
-    parent->childCount++;
-}
 
-void InsertSymbol(SymbolTable* st, char* name, SymbolKinds sKind) 
+void InsertSymbol(SymbolTable* st, Token tk, SymbolTable* scope, SymbolType sType) 
 {
-    strcpy(st->symbols[st->ns].name, name);
-    st->symbols[st->ns].sKind = sKind;
+    st->symbols[st->ns].token = tk;
+    st->symbols[st->ns].sType = sType;
+    st->symbols[st->ns].scope = scope;
     st->symbols[st->ns].address = st->addressCounter++;
     st->ns++;
 }
 
-int FindSymbol(SymbolTable* st, char* name) 
+int FindSymbol(SymbolTable* st, Token tk) 
 {
     if (st == NULL) {
         return -1;
     }
     for (int i = 0; i < st->ns; i++) {
-        if (strcmp(st->symbols[i].name, name) == 0) 
+        if (strcmp(st->symbols[i].token.lx, tk.lx) == 0) 
         {
             return i;
         }
     }
-    for (int i = 0; i < st->childCount; i++) 
+    // If the symbol was not found in the current symbol table, search for it in the parent
+    if (st->parent != NULL) 
     {
-        int childResult = FindSymbol(st->children[i], name);
-        if (childResult != -1) {
-            return childResult;
+        int parentResult = FindSymbol(st->parent, tk);
+        if (parentResult != -1) {
+            return parentResult;
         }
     }
     return -1;
 }
 
-char* SymbolKindString(SymbolKinds sKind) 
+char* SymbolKindString(SymbolType sType) 
 {
-    switch (sKind) 
+    switch (sType) 
     {
         case METHOD: return "METHOD";
         case CLASS: return "CLASS";
-        case VARIABLE: return "VARIABLE";
-        case TYPE: return "TYPE";
+        case CLASS_VAR: return "CLASS_VAR";
+        case VAR: return "VAR";
+        case OBJECT: return "OBJECT";
     }
     return "UNKNOWN";
 }
-
 
 void PrintSymbolTable(SymbolTable* st) 
 {
@@ -92,24 +80,101 @@ void PrintSymbolTable(SymbolTable* st)
         return;
     }
 
+    // First, print the current symbol table
     printf("SYMBOL TABLE:\n");
     printf("num symbols: %d\n", st->ns);
     printf("addressCounter: %d\n", st->addressCounter);
-    printf("childCount: %d\n", st->childCount);
     
-
     for (int i = 0; i < st->ns; i++) 
     {
         printf("-----------------------\n");
         printf("Symbol %d:\n", i);
-        printf("name: %s\n", st->symbols[i].name);
-        printf("symbol kind: %s\n", SymbolKindString(st->symbols[i].sKind));
+        printf("token lx: %s\n", st->symbols[i].token.lx);
+        printf("symbol type: %s\n", SymbolKindString(st->symbols[i].sType));
         printf("address: %d\n", st->symbols[i].address);
+        if(st->symbols[i].scope != NULL)
+            printf("scope: TRUE\n");
+        else
+            printf("scope: FALSE\n");
     }
 
-    for (int i = 0; i < st->childCount; i++) 
+    // Then, print the parent symbol table
+    /*
+    if (st->parent != NULL) 
     {
-        printf("\n***********************\n\n");
-        PrintSymbolTable(st->children[i]);
+        PrintSymbolTable(st->parent);
     }
+    */
+}
+
+void ShallowPass(char* filename, SymbolTable* st) 
+{
+    InitLexer(filename);
+    
+    Token t;
+    SymbolTable* classTable;
+
+    while(t.tp != EOFile) 
+    {
+        t = GetNextToken();
+
+        if (t.tp == RESWORD) 
+        {
+            if (strcmp(t.lx, "class") == 0) 
+            {
+                t = GetNextToken();
+                classTable = CreateSymbolTable(st);
+                InsertSymbol(st, t, classTable, CLASS);
+                //printf("class table added for %s\n", t.lx);
+            }
+            else if(strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0)
+            {
+                t = GetNextToken();
+                if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
+                    ;
+                
+                t = GetNextToken();
+                if (t.tp == ID)
+                {
+                    SymbolTable* methodTable = CreateSymbolTable(st);
+                    InsertSymbol(classTable, t, methodTable, METHOD);
+                    //printf("method table added for %s\n", t.lx);
+                }
+            }
+            else if(strcmp(t.lx, "static") == 0 || strcmp(t.lx, "field") == 0)
+            {
+                t = GetNextToken();
+                if(t.tp == ID || (t.tp == RESWORD && (strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0)))
+                    ;
+                
+                t = GetNextToken();
+                if(t.tp == ID)
+                {
+                    InsertSymbol(classTable, t, NULL, CLASS_VAR);
+                    //printf("class variable %s has been added\n", t.lx);
+
+                    t = PeekNextToken();
+                    while(t.tp != EOF && strcmp(t.lx, ";") != 0)
+                    {
+                        t = GetNextToken();
+                        if(t.tp == SYMBOL && strcmp(t.lx, ",") == 0)
+                        {
+                            t = GetNextToken();
+                            if(t.tp == ID)
+                            {
+                                InsertSymbol(classTable, t, NULL, CLASS_VAR);
+                                //printf("class variable %s has been added\n", t.lx);
+                            }
+                        }
+
+                        t = PeekNextToken();
+                    }
+                }
+            }
+        }
+    }
+
+    StopLexer();
+
+    PrintSymbolTable(classTable);
 }

@@ -6,7 +6,7 @@
 #include "parser.h"
 #include "symbols.h"
 
-// GLOBsAL VARIABLES
+// GLOBAL VARIABLES
 Token t;
 ParserInfo pi;
 SymbolTable* st;
@@ -63,7 +63,7 @@ void findSymbol(char* name)
 
 void addSymbolTable()
 {
-	printf("New symbol table added at line %d for identifer %s\n", t.ln, t.lx);
+	//printf("New symbol table added at line %d for identifer %s\n", t.ln, t.lx);
 	/*
 	SymbolTable* st = CreateSymbolTableNode(head);
 	AddChildSymbolTable(head, st);
@@ -144,7 +144,7 @@ ParserInfo classVarDeclar()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		addSymbol(t.lx);
+		;//addSymbol(t.lx);
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -156,7 +156,7 @@ ParserInfo classVarDeclar()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				;
+				;//addSymbol(t.lx);
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -194,10 +194,14 @@ ParserInfo subroutineDeclar()
 
 	t = GetNextToken();
 	if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
-		t = GetNextToken();
-	else if (t.tp == ID)
+		;
+	else
+		return (ParserInfo){subroutineDeclarErr, t};
+
+	t = GetNextToken();
+	if (t.tp == ID)
 	{
-		addSymbol(t.lx);
+		//addSymbol(t.lx);
 		pi = type();
 		if(pi.er != none)
 			return pi;
@@ -321,7 +325,7 @@ ParserInfo varDeclarStatement()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+		;//addSymbol(t.lx);
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -333,7 +337,7 @@ ParserInfo varDeclarStatement()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				;
+				;//addSymbol(t.lx);
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -361,7 +365,7 @@ ParserInfo letStatement()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+		;//findSymbol(t.lx);
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -555,7 +559,7 @@ ParserInfo subroutineCall()
 {
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+		;//findSymbol(t.lx);
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -563,10 +567,13 @@ ParserInfo subroutineCall()
 	if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 	{
 		t = GetNextToken();
-
+		
 		t = GetNextToken();
 		if(t.tp == ID)
-			;
+		{
+			//printf("method in class ");
+			//findSymbol(t.lx); // Find in other symbpl tables potentially
+		}
 		else
 			return (ParserInfo){idExpected, t};
 	}
@@ -881,10 +888,6 @@ ParserInfo operand()
 int InitParser (char* file_name)
 {
 	InitLexer(file_name);
-
-	// create program wide symbol table
-	st = CreateSymbolTable(root);
-	AddChildSymbolTable(root, st);
 
 	return 0;
 }
