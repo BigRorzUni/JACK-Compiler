@@ -8,8 +8,12 @@
 
 // GLOBAL VARIABLES
 Token t;
+Token classTok;
+int tType;
 ParserInfo pi;
-SymbolTable* st;
+SymbolTable* classScope = NULL;
+SymbolTable* currentScope = NULL;
+SymbolTable* objectScope = NULL;
 
 // GRAMMAR DECLARATIONS
 
@@ -37,37 +41,49 @@ ParserInfo factor(); // (- | ~ | empty) operand
 ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expression ] | ( expressionList ))? | ( expression ) | stringConstant | true | false | null | this
 
 
-void addSymbol(char* name)
+ParserInfo addSymbol(Token tk, SymbolType sType, DataType dType)
 {
-	printf("Symbol %s added at line %d\n", name, t.ln);
-	/*
-	SymbolTable* st = head;
-	while(st->parent != NULL)
-		st = st->parent;
-
-	InsertSymbol(st, name, type);
-	*/
+	int symbolExists = FindSymbol(currentScope, tk);
+	if(symbolExists != 0)
+	{
+		printf("Redeclaration of symbol %s at line %d\n", tk.lx, t.ln);
+		return (ParserInfo){redecIdentifier, t};
+	}
+	InsertSymbol(currentScope, tk, NULL, sType, dType);
+	return (ParserInfo){none, t};
 }
 
-void findSymbol(char* name)
+ParserInfo searchSymbol(Token tk, SymbolTable* scope)
 {
-	printf("Searching for symbol %s found at line %d\n", name, t.ln);
-	/*
-	SymbolTable* st = head;
-	while(st->parent != NULL)
-		st = st->parent;
+	printf("Searching for symbol %s found at line %d\n", tk.lx, tk.ln);
 
-	return FindSymbol(st, name);
-	*/
+	int symbolExists = FindSymbol(scope, tk);
+	if(symbolExists == 0)
+	{
+		printf("Undeclared symbol %s at line %d\n", tk.lx, tk.ln);
+		return (ParserInfo){undecIdentifier, t};
+	}
+	
+	return (ParserInfo){none, t};
+
 }
 
-void addSymbolTable()
+SymbolTable* searchScope(Token tk, SymbolTable* scope)
 {
-	//printf("New symbol table added at line %d for identifer %s\n", t.ln, t.lx);
-	/*
-	SymbolTable* st = CreateSymbolTableNode(head);
-	AddChildSymbolTable(head, st);
-	*/
+	SymbolTable* st = GetSymbolTable(scope, tk);
+	if(st == NULL)
+	{
+		printf("Undeclared scope %s at line %d\n", tk.lx, tk.ln);
+		return NULL;
+	}
+	return st;
+}
+
+int isProgramWide(Token tk)
+{
+	if(GetSymbolTable(root, tk) != NULL)
+		return 1;
+	return 0;
 }
 
 // GRAMMAR IMPLEMENTATIONS
@@ -80,18 +96,27 @@ ParserInfo classDeclar()
 		;
 	else
 		return (ParserInfo){classExpected, t};
+	
+	
 
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+	{
+		classTok = t;
+		classScope = GetSymbolTable(root, t);
+		currentScope = classScope;
+	}
 	else
 		return (ParserInfo){idExpected, t};
+
+
 
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "{") == 0)
 		;
 	else
 		return (ParserInfo){openBraceExpected, t};
+		
 
 	while(t.tp != EOF && strcmp(t.lx, "}") != 0)
 	{	
@@ -120,6 +145,7 @@ ParserInfo memberDeclar()
 	}
 	else if(t.tp == RESWORD && (strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0))
 	{
+		
 		pi = subroutineDeclar();
 		if(pi.er != none)
 			return pi;
@@ -179,37 +205,43 @@ ParserInfo type()
 {
 	t = GetNextToken();
 	if(t.tp == ID || (t.tp == RESWORD && (strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0)))
+	{
+		tType = TokenToDataType(t);
 		return (ParserInfo){none, t};
-
+	}
 	return (ParserInfo){syntaxError, t};
 }
 
 ParserInfo subroutineDeclar()
 {
+	
 	t = GetNextToken();
 	if(t.tp == RESWORD && (strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0))
 		;
 	else
 		return (ParserInfo){subroutineDeclarErr, t};
 
-	t = GetNextToken();
+	t = PeekNextToken();
 	if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
-		;
-	else
-		return (ParserInfo){subroutineDeclarErr, t};
-
-	t = GetNextToken();
-	if (t.tp == ID)
+		t = GetNextToken();
+	else if (t.tp == ID)
 	{
-		//addSymbol(t.lx);
 		pi = type();
 		if(pi.er != none)
 			return pi;
-		
 	}
 	else
 		return (ParserInfo){illegalType, t};
-	
+
+	t = GetNextToken();
+	if(t.tp == ID)
+	{
+		currentScope = GetSymbolTable(classScope, t);
+		printf("***ENTERING THE SCOPE OF %s***\n", t.lx);
+	}
+	else
+		return (ParserInfo){idExpected, t};
+
 	t = GetNextToken();
 	if(t.tp == SYMBOL && strcmp(t.lx, "(") == 0)
 		;
@@ -239,6 +271,11 @@ ParserInfo subroutineDeclar()
 	if(pi.er != none)
 		return pi;
 
+	//printf("SYMBOL TABLE OF EXITING SCOPE IS:\n");
+	PrintSymbolTable(currentScope);
+
+	currentScope = NULL;
+
 	return (ParserInfo){none, t};
 }
 
@@ -264,6 +301,7 @@ ParserInfo subroutineBody()
 		;
 	else
 		return (ParserInfo){closeBraceExpected, t};
+
 	
 	return (ParserInfo){none, t};
 }
@@ -325,7 +363,11 @@ ParserInfo varDeclarStatement()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;//addSymbol(t.lx);
+	{
+		pi = addSymbol(t, VAR, tType);
+		if(pi.er != none)
+			return pi;
+	}
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -337,7 +379,11 @@ ParserInfo varDeclarStatement()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				;//addSymbol(t.lx);
+			{
+				pi = addSymbol(t, VAR, tType);
+				if(pi.er != none)
+					return pi;
+			}
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -365,7 +411,11 @@ ParserInfo letStatement()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;//findSymbol(t.lx);
+	{
+		pi = searchSymbol(t, currentScope);
+		if(pi.er != none)
+			return pi;
+	}
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -559,7 +609,16 @@ ParserInfo subroutineCall()
 {
 	t = GetNextToken();
 	if(t.tp == ID)
-		;//findSymbol(t.lx);
+	{
+		/*
+		pi = searchSymbol(t, currentScope); // find class in root symbol table
+		if(pi.er != none)
+			return pi;
+	
+		if(isProgramWide(t) == 1)
+			objectScope = searchScope(t, currentScope); // find class symbol table
+		*/
+	}
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -571,8 +630,11 @@ ParserInfo subroutineCall()
 		t = GetNextToken();
 		if(t.tp == ID)
 		{
-			//printf("method in class ");
-			//findSymbol(t.lx); // Find in other symbpl tables potentially
+			/*
+			pi = searchSymbol(t, objectScope); // find method in class symbol table
+			if(pi.er != none)
+				return pi;
+			*/
 		}
 		else
 			return (ParserInfo){idExpected, t};
@@ -611,7 +673,11 @@ ParserInfo paramList()
 
 	t = GetNextToken();
 	if(t.tp == ID)
-		;
+	{
+		pi = addSymbol(t, ARG, tType);
+		if(pi.er != none)
+			return pi;
+	}
 	else
 		return (ParserInfo){idExpected, t};
 	
@@ -626,7 +692,11 @@ ParserInfo paramList()
 
 		t = GetNextToken();
 		if(t.tp == ID)
-			;
+		{
+			pi = addSymbol(t, ARG, tType);
+			if(pi.er != none)
+				return pi;
+		}
 		else
 			return (ParserInfo){idExpected, t};
 
@@ -789,6 +859,11 @@ ParserInfo operand()
 	{
 		t = GetNextToken();
 
+		pi = searchSymbol(t, currentScope); // find class in root symbol table
+		if(pi.er != none)
+			return pi;
+		//objectScope = searchScope(t, currentScope); // find class symbol table
+
 		t = PeekNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
 		{
@@ -892,23 +967,6 @@ int InitParser (char* file_name)
 	return 0;
 }
 
-ParserInfo Parse ()
-{
-	ParserInfo pi;
-
-	pi = classDeclar();
-
-	return pi;
-}
-
-
-int StopParser ()
-{
-	StopLexer();
-
-	return 0;
-}
-
 char* ParseErrorString (SyntaxErrors e)
 {
 	switch(e)
@@ -943,10 +1001,37 @@ char* ParseErrorString (SyntaxErrors e)
 			return "= expected";
 		case(syntaxError):
 			return "any other kind of syntax error";
+		case(undecIdentifier):
+			return "undeclared identifier (e.g. class, subroutine, or variable)";
+		case(redecIdentifier):
+			return "redeclaration of identifier in the same scope";
 		default:
 			return "no errors :)";
 	}
 }
+
+ParserInfo Parse ()
+{
+	ParserInfo pi;
+
+	pi = classDeclar(); 
+
+	printf("********************************\nCLASS WIDE SYMBOL TABLE FOR %s\n********************************\n", classTok.lx);
+
+	PrintSymbolTable(classScope);
+
+	return pi;
+}
+
+
+int StopParser ()
+{
+	StopLexer();
+
+	return 0;
+}
+
+
 
 
 #ifndef TEST_PARSER

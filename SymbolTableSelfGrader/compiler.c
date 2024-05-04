@@ -68,46 +68,68 @@ ParserInfo compile (char* dir_name)
         return p;
     }
 
+	char *filePaths[1024]; // Array to store file paths
+	int filePathIndex = 0; // Index to keep track of the next empty spot in the array
+
+	while ((entry = readdir(dir)) != NULL) 
+	{
+		char *ext = strrchr(entry->d_name, '.');
+		if (ext != NULL && strcmp(ext, ".jack") == 0) 
+		{
+			char *filePath = malloc(1024 * sizeof(char));
+			snprintf(filePath, 1024, "%s/%s", dir_name, entry->d_name);
+			filePaths[filePathIndex++] = filePath; // Store the file path in the array
+		}
+	}
+
 	root = CreateSymbolTable(NULL);
 
 	printf("\n\nSHALLOW PARSING EACH FILE\n\n\n");
 
+	// Add library files to the symbol table
+
 	// Parse each file
-    while ((entry = readdir(dir)) != NULL) {
-        char *ext = strrchr(entry->d_name, '.');
-		if (ext != NULL && strcmp(ext, ".jack") == 0) 
-		{
-            char filePath[1024];
-            snprintf(filePath, sizeof(filePath), "%s/%s", dir_name, entry->d_name);
-			printf("Shallow Parsing %s\n", filePath);
-			ShallowPass(filePath, root);
-            // Assuming InitParser and Parse are functions that take a file path as argument
-            //InitParser(filePath);
-            //Parse();
-			printf("\n\n");
-        }
-    }
+    for (int i = 0; i < filePathIndex; i++) 
+	{
+		printf("Shallow Parsing %s\n", filePaths[i]);
+		ShallowPass(filePaths[i], root);
+		printf("\n\n");
+	}
 
-    closedir(dir);
-
+    rewinddir(dir);
 
 	PrintSymbolTable(root);
 
-	printf("\n\nSHALLOW PARSING COMPLETE\n\n");
+	printf("\n\nSHALLOW PARSING COMPLETE\n\n======================================");
 
-	// write your code below
+	printf("\n\nDEEP PARSING PONG/BALL.JACK\n\n\n");
 
-	// open the directory
+	InitParser(filePaths[0]);
+	p = Parse();
+	StopParser();
 
-	// for each file in the directory add their name into the symbol table
+/*
+	printf("\n\nDEEP PARSING EACH FILE\n\n\n");
 
-	// next
+	for (int i = 0; i < filePathIndex; i++) 
+	{
+		InitParser(filePaths[i]);
+		p = Parse();
+		StopParser();
+    }
+*/
+	printf("\n\nDEEP PARSING COMPLETE\n\n");
 
-	// for each file in the directory run InitParser with the file name and then run Parse
+	//PrintSymbolTable(root);
 
+	closedir(dir);
 
+	// Free each file path in the array
+	for (int i = 0; i < filePathIndex; i++) 
+	{
+		free(filePaths[i]);
+	}
 
-	p.er = none;
 	return p;
 }
 
@@ -153,6 +175,10 @@ char* GetErrorString(SyntaxErrors e)
 			return "= expected";
 		case(syntaxError):
 			return "any other kind of syntax error";
+		case(undecIdentifier):
+			return "undeclared identifier (e.g. class, subroutine, or variable)";
+		case(redecIdentifier):
+			return "redeclaration of identifier in the same scope";
 		default:
 			return "no errors :)";
 	}

@@ -29,38 +29,71 @@ SymbolTable* CreateSymbolTable(SymbolTable* parent)
 }
 
 
-void InsertSymbol(SymbolTable* st, Token tk, SymbolTable* scope, SymbolType sType) 
+void InsertSymbol(SymbolTable* st, Token tk, SymbolTable* scope, SymbolType sType, DataType dType) 
 {
     st->symbols[st->ns].token = tk;
     st->symbols[st->ns].sType = sType;
+    st->symbols[st->ns].dType = dType;
     st->symbols[st->ns].scope = scope;
     st->symbols[st->ns].address = st->addressCounter++;
     st->ns++;
 }
 
-int FindSymbol(SymbolTable* st, Token tk) 
+SymbolTable* GetSymbolTable(SymbolTable* st, Token tk) 
 {
-    if (st == NULL) {
-        return -1;
+    if (st == NULL) 
+    {
+        return NULL;
     }
-    for (int i = 0; i < st->ns; i++) {
+    for (int i = 0; i < st->ns; i++) 
+    {
         if (strcmp(st->symbols[i].token.lx, tk.lx) == 0) 
         {
-            return i;
+            return st->symbols[i].scope;
         }
     }
     // If the symbol was not found in the current symbol table, search for it in the parent
     if (st->parent != NULL) 
     {
-        int parentResult = FindSymbol(st->parent, tk);
-        if (parentResult != -1) {
-            return parentResult;
-        }
+        return GetSymbolTable(st->parent, tk);
     }
-    return -1;
+    return NULL;
 }
 
-char* SymbolKindString(SymbolType sType) 
+SymbolTable* ExitScope(SymbolTable* st) 
+{
+    if(st->parent != NULL)
+        return st->parent;
+}
+
+int FindSymbol(SymbolTable* st, Token tk) 
+{
+    if (st == NULL) 
+    {
+        printf("Symbol table error when trying to find symbol %s at %d\n", tk.lx, tk.ln);
+        return -1;
+    }
+
+    //printf("searching table for %s\n", tk.lx);
+    for (int i = 0; i < st->ns; i++) 
+    {
+        //printf("comparing %s to %s\n", st->symbols[i].token.lx, tk.lx);
+        if (strcmp(st->symbols[i].token.lx, tk.lx) == 0) 
+        {
+            //printf("found symbol %s at %d in the table\n", tk.lx, i);
+            return 1;
+        }
+    }
+    // If the symbol was not found in the current symbol table, search for it in the parent
+    if (st->parent != NULL) 
+    {
+        printf("searching parent table\n");
+        return FindSymbol(st->parent, tk);
+    }
+    return 0;
+}
+
+char* SymbolTypeString(SymbolType sType) 
 {
     switch (sType) 
     {
@@ -68,15 +101,49 @@ char* SymbolKindString(SymbolType sType)
         case CLASS: return "CLASS";
         case CLASS_VAR: return "CLASS_VAR";
         case VAR: return "VAR";
-        case OBJECT: return "OBJECT";
+        case ARG: return "ARG";
     }
     return "UNKNOWN";
+}
+
+char* DataTypeString(DataType dType) 
+{
+    switch (dType) 
+    {
+        case INTEGER: return "INT";
+        case CHARACTER: return "CHAR";
+        case BOOLEAN: return "BOOL";
+        case OBJECT: return "OBJECT";
+        case VOID: return "VOID";
+    }
+    return "UNKNOWN";
+}
+
+int TokenToDataType(Token tk)
+{
+    if(tk.tp == RESWORD)
+    {
+        if(strcmp(tk.lx, "int") == 0)
+            return INTEGER;
+        else if(strcmp(tk.lx, "char") == 0)
+            return CHARACTER;
+        else if(strcmp(tk.lx, "boolean") == 0)
+            return BOOLEAN;
+        else if(strcmp(tk.lx, "void") == 0)
+            return VOID;
+    }
+    
+    if(tk.tp == ID)
+        return OBJECT;
+
+    return -1;
 }
 
 void PrintSymbolTable(SymbolTable* st) 
 {
     if (st == NULL) 
     {
+        printf("Symbol table is NULL\n");
         return;
     }
 
@@ -84,27 +151,26 @@ void PrintSymbolTable(SymbolTable* st)
     printf("SYMBOL TABLE:\n");
     printf("num symbols: %d\n", st->ns);
     printf("addressCounter: %d\n", st->addressCounter);
+    printf("-----------------------------\n");
     
     for (int i = 0; i < st->ns; i++) 
     {
-        printf("-----------------------\n");
-        printf("Symbol %d:\n", i);
-        printf("token lx: %s\n", st->symbols[i].token.lx);
-        printf("symbol type: %s\n", SymbolKindString(st->symbols[i].sType));
-        printf("address: %d\n", st->symbols[i].address);
+        printf("Symbol: %d, ", i);
+        printf("token lx: %s, ", st->symbols[i].token.lx);
+        printf("symbol type: %s, ", SymbolTypeString(st->symbols[i].sType));
+        printf("data type: %s, ", DataTypeString(st->symbols[i].dType));
+        printf("address: %d, ", st->symbols[i].address);
         if(st->symbols[i].scope != NULL)
+        {
             printf("scope: TRUE\n");
+            //printf("scope: TRUE\n****************************\n");
+            //PrintSymbolTable(st->symbols[i].scope);
+            //printf("END OF SCOPE TABLE\n****************************\n");
+        }
         else
             printf("scope: FALSE\n");
     }
-
-    // Then, print the parent symbol table
-    /*
-    if (st->parent != NULL) 
-    {
-        PrintSymbolTable(st->parent);
-    }
-    */
+    printf("-----------------------------\n");
 }
 
 void ShallowPass(char* filename, SymbolTable* st) 
@@ -112,7 +178,8 @@ void ShallowPass(char* filename, SymbolTable* st)
     InitLexer(filename);
     
     Token t;
-    SymbolTable* classTable;
+    int type;
+    SymbolTable* classTable = NULL;
 
     while(t.tp != EOFile) 
     {
@@ -124,20 +191,20 @@ void ShallowPass(char* filename, SymbolTable* st)
             {
                 t = GetNextToken();
                 classTable = CreateSymbolTable(st);
-                InsertSymbol(st, t, classTable, CLASS);
+                InsertSymbol(st, t, classTable, CLASS, OBJECT);
                 //printf("class table added for %s\n", t.lx);
             }
             else if(strcmp(t.lx, "constructor") == 0 || strcmp(t.lx, "function") == 0 || strcmp(t.lx, "method") == 0)
             {
                 t = GetNextToken();
                 if(t.tp == RESWORD && (strcmp(t.lx, "void") == 0 || strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0))
-                    ;
+                    type = TokenToDataType(t);
                 
                 t = GetNextToken();
                 if (t.tp == ID)
                 {
-                    SymbolTable* methodTable = CreateSymbolTable(st);
-                    InsertSymbol(classTable, t, methodTable, METHOD);
+                    SymbolTable* methodTable = CreateSymbolTable(classTable);
+                    InsertSymbol(classTable, t, methodTable, METHOD, type);
                     //printf("method table added for %s\n", t.lx);
                 }
             }
@@ -145,12 +212,12 @@ void ShallowPass(char* filename, SymbolTable* st)
             {
                 t = GetNextToken();
                 if(t.tp == ID || (t.tp == RESWORD && (strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0)))
-                    ;
+                    type = TokenToDataType(t);
                 
                 t = GetNextToken();
                 if(t.tp == ID)
                 {
-                    InsertSymbol(classTable, t, NULL, CLASS_VAR);
+                    InsertSymbol(classTable, t, NULL, CLASS_VAR, type);
                     //printf("class variable %s has been added\n", t.lx);
 
                     t = PeekNextToken();
@@ -162,7 +229,7 @@ void ShallowPass(char* filename, SymbolTable* st)
                             t = GetNextToken();
                             if(t.tp == ID)
                             {
-                                InsertSymbol(classTable, t, NULL, CLASS_VAR);
+                                InsertSymbol(classTable, t, NULL, CLASS_VAR, type);
                                 //printf("class variable %s has been added\n", t.lx);
                             }
                         }
@@ -175,6 +242,4 @@ void ShallowPass(char* filename, SymbolTable* st)
     }
 
     StopLexer();
-
-    PrintSymbolTable(classTable);
 }

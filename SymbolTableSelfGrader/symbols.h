@@ -9,13 +9,16 @@
 
 // define your own types and function prototypes for the symbol table(s) module below
 
-typedef enum {METHOD, CLASS, CLASS_VAR, VAR, OBJECT} SymbolType;
+typedef enum {METHOD, CLASS, CLASS_VAR, VAR, ARG} SymbolType;
+
+typedef enum {INTEGER, CHARACTER, BOOLEAN, OBJECT, VOID} DataType;
 
 typedef struct SymbolTable SymbolTable;
 
 typedef struct {
 	Token token;
     SymbolType sType;
+    DataType dType;
 	int address;
     SymbolTable* scope;
 } Symbol;
@@ -24,7 +27,7 @@ struct SymbolTable {
     Symbol symbols[100];
     int ns;
     int addressCounter;
-    struct SymbolTable* parent;
+    SymbolTable* parent;
 };
 
 
@@ -32,10 +35,13 @@ struct SymbolTable {
 extern SymbolTable* root;
 
 SymbolTable* CreateSymbolTable(SymbolTable* parent);
-void AddChildSymbolTable(SymbolTable* parent, SymbolTable* child);
+SymbolTable* GetSymbolTable(SymbolTable* st, Token tk);
+SymbolTable* ExitScope(SymbolTable* st);
 
-void InsertSymbol(SymbolTable* st, Token t, SymbolTable* scope, SymbolType sType);
+void InsertSymbol(SymbolTable* st, Token t, SymbolTable* scope, SymbolType sType, DataType dType);
 int FindSymbol(SymbolTable* st, Token t);
+
+int TokenToDataType(Token t);
 
 void PrintSymbolTable(SymbolTable* st);
 
