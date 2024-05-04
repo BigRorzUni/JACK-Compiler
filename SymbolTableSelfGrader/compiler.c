@@ -87,6 +87,7 @@ ParserInfo compile (char* dir_name)
 	printf("\n\nSHALLOW PARSING EACH FILE\n\n\n");
 
 	// Add library files to the symbol table
+	AddLibrarySymbols();
 
 	// Parse each file
     for (int i = 0; i < filePathIndex; i++) 

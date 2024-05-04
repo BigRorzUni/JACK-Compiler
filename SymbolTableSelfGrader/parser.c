@@ -610,14 +610,12 @@ ParserInfo subroutineCall()
 	t = GetNextToken();
 	if(t.tp == ID)
 	{
-		/*
 		pi = searchSymbol(t, currentScope); // find class in root symbol table
 		if(pi.er != none)
 			return pi;
 	
 		if(isProgramWide(t) == 1)
 			objectScope = searchScope(t, currentScope); // find class symbol table
-		*/
 	}
 	else
 		return (ParserInfo){idExpected, t};
@@ -630,11 +628,9 @@ ParserInfo subroutineCall()
 		t = GetNextToken();
 		if(t.tp == ID)
 		{
-			/*
 			pi = searchSymbol(t, objectScope); // find method in class symbol table
 			if(pi.er != none)
 				return pi;
-			*/
 		}
 		else
 			return (ParserInfo){idExpected, t};
@@ -862,7 +858,9 @@ ParserInfo operand()
 		pi = searchSymbol(t, currentScope); // find class in root symbol table
 		if(pi.er != none)
 			return pi;
-		//objectScope = searchScope(t, currentScope); // find class symbol table
+			
+		if(isProgramWide(t) == 1)
+			objectScope = searchScope(t, currentScope); // find class symbol table
 
 		t = PeekNextToken();
 		if(t.tp == SYMBOL && strcmp(t.lx, ".") == 0)
@@ -871,7 +869,11 @@ ParserInfo operand()
 
 			t = GetNextToken();
 			if(t.tp == ID)
-				;
+			{
+				pi = searchSymbol(t, objectScope); // find method in class symbol table
+				if(pi.er != none)
+					return pi;
+			}
 			else
 				return (ParserInfo){idExpected, t};
 		}

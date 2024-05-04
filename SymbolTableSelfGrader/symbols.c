@@ -19,6 +19,151 @@ Date Work Commenced: 19/03/2024
 
 SymbolTable* root = NULL;
 
+Token makeToken(TokenType tp, char* lx, int ln) 
+{
+    Token t;
+    t.tp = tp;
+    strcpy(t.lx, lx);
+    t.ln = ln;
+    return t;
+}
+
+void AddLibrarySymbols() 
+{
+    SymbolTable* MemoryTable = CreateSymbolTable(root);
+    SymbolTable* MathTable = CreateSymbolTable(root);
+    SymbolTable* SysTable = CreateSymbolTable(root);
+    SymbolTable* OutputTable = CreateSymbolTable(root);
+    SymbolTable* ScreenTable = CreateSymbolTable(root);
+    SymbolTable* KeyboardTable = CreateSymbolTable(root);
+    SymbolTable* ArrayTable = CreateSymbolTable(root);
+    SymbolTable* StringTable = CreateSymbolTable(root);
+
+    Token MemoryToken = makeToken(ID, "Memory", 0);
+    Token peekToken = makeToken(ID, "peek", 0);
+    Token pokeToken = makeToken(ID, "poke", 0);
+    Token allocToken = makeToken(ID, "alloc", 0);
+    Token deAllocToken = makeToken(ID, "deAlloc", 0);
+
+    Token MathToken = makeToken(ID, "Math", 0);
+    Token absToken = makeToken(ID, "abs", 0);
+    Token multiplyToken = makeToken(ID, "multiply", 0);
+    Token divideToken = makeToken(ID, "divide", 0);
+    Token minToken = makeToken(ID, "min", 0);
+    Token maxToken = makeToken(ID, "max", 0);
+    Token sqrtToken = makeToken(ID, "sqrt", 0);
+
+
+    Token SysToken = makeToken(ID, "Sys", 0);
+    Token haltToken = makeToken(ID, "halt", 0);
+    Token errorToken = makeToken(ID, "error", 0);
+    Token waitToken = makeToken(ID, "wait", 0);
+
+    Token OutputToken = makeToken(ID, "Output", 0);
+    Token initToken = makeToken(ID, "init", 0);
+    Token moveCursorToken = makeToken(ID, "moveCursor", 0);
+    Token printCharToken = makeToken(ID, "printChar", 0);
+    Token printIntToken = makeToken(ID, "printInt", 0);
+    Token printStringToken = makeToken(ID, "printString", 0);
+    Token printlnToken = makeToken(ID, "println", 0);
+    Token backspaceToken = makeToken(ID, "backspace", 0);
+
+    Token ScreenToken = makeToken(ID, "Screen", 0);
+    Token clearScreenToken = makeToken(ID, "clearScreen", 0);
+    Token setColorToken = makeToken(ID, "setColor", 0);
+    Token drawPixelToken = makeToken(ID, "drawPixel", 0);
+    Token drawLineToken = makeToken(ID, "drawLine", 0);
+    Token drawRectangleToken = makeToken(ID, "drawRectangle", 0);
+    Token drawCircleToken = makeToken(ID, "drawCircle", 0);
+
+    Token KeyboardToken = makeToken(ID, "Keyboard", 0);
+    Token keyPressedToken = makeToken(ID, "keyPressed", 0);
+    Token readCharToken = makeToken(ID, "readChar", 0);
+    Token readLineToken = makeToken(ID, "readLine", 0);
+    Token readIntToken = makeToken(ID, "readInt", 0);
+
+    Token ArrayToken = makeToken(ID, "Array", 0);
+    Token newToken = makeToken(ID, "new", 0);
+    Token disposeToken = makeToken(ID, "dispose", 0);
+
+    Token StringToken = makeToken(ID, "String", 0);
+    Token newStringToken = makeToken(ID, "new", 0);
+    Token disposeStringToken = makeToken(ID, "dispose", 0);
+    Token lengthToken = makeToken(ID, "length", 0);
+    Token setCharAtToken = makeToken(ID, "setCharAt", 0);
+    Token charAtToken = makeToken(ID, "charAt", 0);
+    Token appendCharToken = makeToken(ID, "appendChar", 0);
+    Token eraseLastCharToken = makeToken(ID, "eraseLastChar", 0);
+    Token intValueToken = makeToken(ID, "intValue", 0);
+    Token setIntToken = makeToken(ID, "setInt", 0);
+    Token newLineToken = makeToken(ID, "newLine", 0);
+    Token backspaceStringToken = makeToken(ID, "backspace", 0);
+    Token doubleQuoteToken = makeToken(ID, "doubleQuote", 0);
+
+
+    InsertSymbol(root, MemoryToken, MemoryTable, CLASS, OBJECT);
+    InsertSymbol(MemoryTable, peekToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MemoryTable, pokeToken, NULL, METHOD, VOID);
+    InsertSymbol(MemoryTable, allocToken, NULL, METHOD, OBJECT);
+    InsertSymbol(MemoryTable, deAllocToken, NULL, METHOD, VOID);
+
+
+    InsertSymbol(root, MathToken, MathTable, CLASS, OBJECT);
+    InsertSymbol(MathTable, absToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MathTable, multiplyToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MathTable, divideToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MathTable, minToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MathTable, maxToken, NULL, METHOD, INTEGER);
+    InsertSymbol(MathTable, sqrtToken, NULL, METHOD, INTEGER);
+
+    InsertSymbol(root, SysToken, SysTable, CLASS, OBJECT);
+    InsertSymbol(SysTable, haltToken, NULL, METHOD, VOID);
+    InsertSymbol(SysTable, errorToken, NULL, METHOD, VOID);
+    InsertSymbol(SysTable, waitToken, NULL, METHOD, VOID);
+
+    InsertSymbol(root, OutputToken, OutputTable, CLASS, OBJECT);
+    InsertSymbol(OutputTable, initToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, moveCursorToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, printCharToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, printIntToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, printStringToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, printlnToken, NULL, METHOD, VOID);
+    InsertSymbol(OutputTable, backspaceToken, NULL, METHOD, VOID);
+
+    InsertSymbol(root, ScreenToken, ScreenTable, CLASS, OBJECT);
+    InsertSymbol(ScreenTable, clearScreenToken, NULL, METHOD, VOID);
+    InsertSymbol(ScreenTable, setColorToken, NULL, METHOD, VOID);
+    InsertSymbol(ScreenTable, drawPixelToken, NULL, METHOD, VOID);
+    InsertSymbol(ScreenTable, drawLineToken, NULL, METHOD, VOID);
+    InsertSymbol(ScreenTable, drawRectangleToken, NULL, METHOD, VOID);
+    InsertSymbol(ScreenTable, drawCircleToken, NULL, METHOD, VOID);
+
+    InsertSymbol(root, KeyboardToken, KeyboardTable, CLASS, OBJECT);
+    InsertSymbol(KeyboardTable, keyPressedToken, NULL, METHOD, CHARACTER);
+    InsertSymbol(KeyboardTable, readCharToken, NULL, METHOD, CHARACTER);
+    InsertSymbol(KeyboardTable, readLineToken, NULL, METHOD, OBJECT);
+    InsertSymbol(KeyboardTable, readIntToken, NULL, METHOD, INTEGER);
+
+    InsertSymbol(root, ArrayToken, ArrayTable, CLASS, OBJECT);
+    InsertSymbol(ArrayTable, newToken, NULL, METHOD, OBJECT);
+    InsertSymbol(ArrayTable, disposeToken, NULL, METHOD, VOID);
+
+    InsertSymbol(root, StringToken, StringTable, CLASS, OBJECT);
+    InsertSymbol(StringTable, newStringToken, NULL, METHOD, OBJECT);
+    InsertSymbol(StringTable, disposeStringToken, NULL, METHOD, VOID);
+    InsertSymbol(StringTable, lengthToken, NULL, METHOD, INTEGER);
+    InsertSymbol(StringTable, charAtToken, NULL, METHOD, CHARACTER);
+    InsertSymbol(StringTable, setCharAtToken, NULL, METHOD, VOID);
+    InsertSymbol(StringTable, appendCharToken, NULL, METHOD, OBJECT);
+    InsertSymbol(StringTable, eraseLastCharToken, NULL, METHOD, VOID);
+    InsertSymbol(StringTable, intValueToken, NULL, METHOD, INTEGER);
+    InsertSymbol(StringTable, setIntToken, NULL, METHOD, VOID);
+    InsertSymbol(StringTable, newLineToken, NULL, METHOD, CHARACTER);
+    InsertSymbol(StringTable, backspaceStringToken, NULL, METHOD, CHARACTER);
+    InsertSymbol(StringTable, doubleQuoteToken, NULL, METHOD, CHARACTER);
+    
+}
+
 SymbolTable* CreateSymbolTable(SymbolTable* parent) 
 {
     SymbolTable* newNode = malloc(sizeof(SymbolTable));

@@ -40,6 +40,7 @@ SymbolTable* ExitScope(SymbolTable* st);
 
 void InsertSymbol(SymbolTable* st, Token t, SymbolTable* scope, SymbolType sType, DataType dType);
 int FindSymbol(SymbolTable* st, Token t);
+void AddLibrarySymbols();
 
 int TokenToDataType(Token t);
 
