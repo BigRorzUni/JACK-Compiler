@@ -1,0 +1,135 @@
+--Ball.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 203]
+
+--Empty.jack--
+--------------
+ERROR: keyword class expected
+last token read = [5, 'EOF', ln: 1]
+
+--EofInComment.jack--
+--------------
+ERROR: lexer error
+last token read = [6, 'Error: unexpected eof in comment', ln: 10]
+
+--EofInStr.jack--
+--------------
+ERROR: lexer error
+last token read = [6, 'Error: unexpected eof in string constant', ln: 2]
+
+--Fraction.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 65]
+
+--IllegalSymbol.jack--
+--------------
+ERROR: lexer error
+last token read = [6, 'Error: illegal symbol in source file', ln: 2]
+
+--List.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 46]
+
+--Main.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 27]
+
+--NewLineInStr.jack--
+--------------
+ERROR: lexer error
+last token read = [6, 'Error: new line in string constant', ln: 1]
+
+--PongGame.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 137]
+
+--Square.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 108]
+
+--SquareGame.jack--
+--------------
+no errors :)
+last token read = [3, '}', ln: 76]
+
+--classExpected.jack--
+--------------
+ERROR: keyword class expected
+last token read = [1, 'clas', ln: 7]
+
+--closeBracketExpected.jack--
+--------------
+ERROR: ] expected
+last token read = [3, ';', ln: 19]
+
+--closeParenExpected.jack--
+--------------
+ERROR: ) expected
+last token read = [3, '{', ln: 19]
+
+--closeParenExpected1.jack--
+--------------
+ERROR: ) expected
+last token read = [3, ';', ln: 43]
+
+--equalExpected.jack--
+--------------
+ERROR: = expected
+last token read = [2, '0', ln: 27]
+
+--idExpected.jack--
+--------------
+ERROR: identifier expected
+last token read = [3, '{', ln: 11]
+
+--idExpected2.jack--
+--------------
+ERROR: identifier expected
+last token read = [3, '.', ln: 59]
+
+--memberDeclarErr.jack--
+--------------
+ERROR: class member declaration must begin with static, field, constructor , function , or method
+last token read = [1, 'lulu', ln: 27]
+
+--openBraceExpected.jack--
+--------------
+ERROR: { expected
+last token read = [0, 'field', ln: 8]
+
+--openParenExpected.jack--
+--------------
+ERROR: ( expected
+last token read = [0, 'false', ln: 52]
+
+--semicolonExpected.jack--
+--------------
+ERROR: ; expected
+last token read = [3, '}', ln: 27]
+
+--semicolonExpected1.jack--
+--------------
+ERROR: ; expected
+last token read = [3, ')', ln: 36]
+
+--syntaxError.jack--
+--------------
+ERROR: ) expected
+last token read = [1, 'dx', ln: 96]
+
+--syntaxError1.jack--
+--------------
+ERROR: any other kind of syntax error
+last token read = [3, ';', ln: 61]
+
+--syntaxError2.jack--
+--------------
+ERROR: ; expected
+last token read = [3, ')', ln: 91]
+

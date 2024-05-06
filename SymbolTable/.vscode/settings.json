@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "lexer.h": "c",
+        "symbols.h": "c",
+        "parser.h": "c"
+    }
+}

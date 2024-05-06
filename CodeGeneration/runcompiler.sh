@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Compile the C files
+cc -std=c99 lexer.h parser.h symbols.h compiler.h lexer.c parser.c symbols.c compiler.c CodeGrader.c -o compiler
+
+# Check if the compilation was successful
+if [ $? -eq 0 ]; then
+    ./compiler "$1"
+    echo "Compilation successful"
+else
+    echo "Compilation failed"
+fi
