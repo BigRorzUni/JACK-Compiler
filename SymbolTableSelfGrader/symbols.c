@@ -97,7 +97,7 @@ void AddLibrarySymbols()
     Token intValueToken = makeToken(ID, "intValue", 0);
     Token setIntToken = makeToken(ID, "setInt", 0);
     Token newLineToken = makeToken(ID, "newLine", 0);
-    Token backspaceStringToken = makeToken(ID, "backspace", 0);
+    Token backspaceStringToken = makeToken(ID, "backSpace", 0);
     Token doubleQuoteToken = makeToken(ID, "doubleQuote", 0);
 
 
@@ -188,6 +188,7 @@ SymbolTable* GetSymbolTable(SymbolTable* st, Token tk)
 {
     if (st == NULL) 
     {
+        //printf("current scope is null\n");
         return NULL;
     }
     for (int i = 0; i < st->ns; i++) 
@@ -200,6 +201,7 @@ SymbolTable* GetSymbolTable(SymbolTable* st, Token tk)
     // If the symbol was not found in the current symbol table, search for it in the parent
     if (st->parent != NULL) 
     {
+        //printf("Searching parent for symbol table\n");
         return GetSymbolTable(st->parent, tk);
     }
     return NULL;
@@ -211,11 +213,48 @@ SymbolTable* ExitScope(SymbolTable* st)
         return st->parent;
 }
 
+void AssignScopeToInstance(SymbolTable* st, Token tk, SymbolTable* scope) 
+{
+    if (st == NULL) 
+    {
+        //printf("Symbol table error when trying to assign scope to %s\n", tk.lx);
+        return;
+    }
+    for(int i = 0; i < st->ns; i++) 
+    {
+        if(strcmp(st->symbols[i].token.lx, tk.lx) == 0) 
+        {
+            st->symbols[i].scope = scope;
+            return;
+        }
+    }
+
+    
+}
+
+int CheckScopeForSymbol(SymbolTable* st, Token tk) 
+{
+    if (st == NULL) 
+    {
+        //printf("Symbol table error when trying to find symbol %s at %d\n", tk.lx, tk.ln);
+        return -1;
+    }
+
+    for (int i = 0; i < st->ns; i++) 
+    {
+        if (strcmp(st->symbols[i].token.lx, tk.lx) == 0) 
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int FindSymbol(SymbolTable* st, Token tk) 
 {
     if (st == NULL) 
     {
-        printf("Symbol table error when trying to find symbol %s at %d\n", tk.lx, tk.ln);
+        //printf("Symbol table error when trying to find symbol %s at %d\n", tk.lx, tk.ln);
         return -1;
     }
 
@@ -232,7 +271,7 @@ int FindSymbol(SymbolTable* st, Token tk)
     // If the symbol was not found in the current symbol table, search for it in the parent
     if (st->parent != NULL) 
     {
-        printf("searching parent table\n");
+        //printf("searching parent table\n");
         return FindSymbol(st->parent, tk);
     }
     return 0;
@@ -288,7 +327,7 @@ void PrintSymbolTable(SymbolTable* st)
 {
     if (st == NULL) 
     {
-        printf("Symbol table is NULL\n");
+        //printf("Symbol table is NULL\n");
         return;
     }
 
@@ -318,11 +357,13 @@ void PrintSymbolTable(SymbolTable* st)
     printf("-----------------------------\n");
 }
 
-void ShallowPass(char* filename, SymbolTable* st) 
+ParserInfo ShallowPass(char* filename, SymbolTable* st) 
 {
     InitLexer(filename);
+
+    //printf("Parsing %s\n", filename);
     
-    Token t;
+    Token t = {0};
     int type;
     SymbolTable* classTable = NULL;
 
@@ -362,6 +403,12 @@ void ShallowPass(char* filename, SymbolTable* st)
                 t = GetNextToken();
                 if(t.tp == ID)
                 {
+                    int symbolExists = FindSymbol(classTable, t);
+                    if(symbolExists == 1)
+                    {
+                        //printf("Error: redeclaration of identifier %s\n", t.lx);
+                        return (ParserInfo){redecIdentifier, t};
+                    }
                     InsertSymbol(classTable, t, NULL, CLASS_VAR, type);
                     //printf("class variable %s has been added\n", t.lx);
 
@@ -374,6 +421,11 @@ void ShallowPass(char* filename, SymbolTable* st)
                             t = GetNextToken();
                             if(t.tp == ID)
                             {
+                                int symbolExists = FindSymbol(classTable, t);
+                                if(symbolExists == 1)
+                                {
+                                    return (ParserInfo){redecIdentifier, t};
+                                }
                                 InsertSymbol(classTable, t, NULL, CLASS_VAR, type);
                                 //printf("class variable %s has been added\n", t.lx);
                             }
@@ -387,4 +439,6 @@ void ShallowPass(char* filename, SymbolTable* st)
     }
 
     StopLexer();
+
+    return (ParserInfo){none, t};
 }

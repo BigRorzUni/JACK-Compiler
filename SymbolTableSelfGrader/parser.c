@@ -43,10 +43,10 @@ ParserInfo operand(); // integerConstant | identifier (.identifier)? ([ expressi
 
 ParserInfo addSymbol(Token tk, SymbolType sType, DataType dType)
 {
-	int symbolExists = FindSymbol(currentScope, tk);
+	int symbolExists = CheckScopeForSymbol(currentScope, tk);
 	if(symbolExists != 0)
 	{
-		printf("Redeclaration of symbol %s at line %d\n", tk.lx, t.ln);
+		//printf("Redeclaration of symbol %s at line %d\n", tk.lx, t.ln);
 		return (ParserInfo){redecIdentifier, t};
 	}
 	InsertSymbol(currentScope, tk, NULL, sType, dType);
@@ -55,12 +55,12 @@ ParserInfo addSymbol(Token tk, SymbolType sType, DataType dType)
 
 ParserInfo searchSymbol(Token tk, SymbolTable* scope)
 {
-	printf("Searching for symbol %s found at line %d\n", tk.lx, tk.ln);
+	//printf("Searching for symbol %s found at line %d\n", tk.lx, tk.ln);
 
 	int symbolExists = FindSymbol(scope, tk);
-	if(symbolExists == 0)
+	if(symbolExists != 1)
 	{
-		printf("Undeclared symbol %s at line %d\n", tk.lx, tk.ln);
+		//printf("Undeclared symbol %s at line %d\n", tk.lx, tk.ln);
 		return (ParserInfo){undecIdentifier, t};
 	}
 	
@@ -73,15 +73,17 @@ SymbolTable* searchScope(Token tk, SymbolTable* scope)
 	SymbolTable* st = GetSymbolTable(scope, tk);
 	if(st == NULL)
 	{
-		printf("Undeclared scope %s at line %d\n", tk.lx, tk.ln);
+		//printf("Undeclared scope %s at line %d\n", tk.lx, tk.ln);
 		return NULL;
 	}
+	//printf("found scope %s at line %d\n", tk.lx, tk.ln);
 	return st;
 }
 
-int isProgramWide(Token tk)
+int hasSymbolTable(Token tk)
 {
-	if(GetSymbolTable(root, tk) != NULL)
+	//printf("Checking for symbol table\n");
+	if(GetSymbolTable(currentScope, tk) != NULL)
 		return 1;
 	return 0;
 }
@@ -170,7 +172,10 @@ ParserInfo classVarDeclar()
 	
 	t = GetNextToken();
 	if(t.tp == ID)
-		;//addSymbol(t.lx);
+	{
+		if(tType == OBJECT && hasSymbolTable(t) == 0)
+			AssignScopeToInstance(currentScope, t, objectScope);
+	}	
 	else
 		return (ParserInfo){idExpected, t};
 
@@ -182,7 +187,10 @@ ParserInfo classVarDeclar()
 		{
 			t = GetNextToken();
 			if(t.tp == ID)
-				;//addSymbol(t.lx);
+			{
+				if(tType == OBJECT)
+					AssignScopeToInstance(currentScope, t, objectScope);
+			}
 			else
 				return (ParserInfo){idExpected, t};
 		}
@@ -207,6 +215,12 @@ ParserInfo type()
 	if(t.tp == ID || (t.tp == RESWORD && (strcmp(t.lx, "int") == 0 || strcmp(t.lx, "char") == 0 || strcmp(t.lx, "boolean") == 0)))
 	{
 		tType = TokenToDataType(t);
+		if(tType == OBJECT)
+		{
+			objectScope = searchScope(t, root);
+			if(objectScope == NULL)
+				return (ParserInfo){undecIdentifier, t};
+		}
 		return (ParserInfo){none, t};
 	}
 	return (ParserInfo){syntaxError, t};
@@ -237,7 +251,7 @@ ParserInfo subroutineDeclar()
 	if(t.tp == ID)
 	{
 		currentScope = GetSymbolTable(classScope, t);
-		printf("***ENTERING THE SCOPE OF %s***\n", t.lx);
+		//printf("***ENTERING THE SCOPE OF %s***\n", t.lx);
 	}
 	else
 		return (ParserInfo){idExpected, t};
@@ -272,7 +286,7 @@ ParserInfo subroutineDeclar()
 		return pi;
 
 	//printf("SYMBOL TABLE OF EXITING SCOPE IS:\n");
-	PrintSymbolTable(currentScope);
+	//PrintSymbolTable(currentScope);
 
 	currentScope = NULL;
 
@@ -367,6 +381,9 @@ ParserInfo varDeclarStatement()
 		pi = addSymbol(t, VAR, tType);
 		if(pi.er != none)
 			return pi;
+
+		if(tType == OBJECT && hasSymbolTable(t) == 0)
+			AssignScopeToInstance(currentScope, t, objectScope);
 	}
 	else
 		return (ParserInfo){idExpected, t};
@@ -610,12 +627,16 @@ ParserInfo subroutineCall()
 	t = GetNextToken();
 	if(t.tp == ID)
 	{
-		pi = searchSymbol(t, currentScope); // find class in root symbol table
+		pi = searchSymbol(t, currentScope);
 		if(pi.er != none)
 			return pi;
 	
-		if(isProgramWide(t) == 1)
+		//printf("checking for attached symbol table\n");
+		if(searchScope(t, currentScope) != NULL)
+		{
+			//printf("has a symbol table attached\n");
 			objectScope = searchScope(t, currentScope); // find class symbol table
+		}
 	}
 	else
 		return (ParserInfo){idExpected, t};
@@ -855,11 +876,11 @@ ParserInfo operand()
 	{
 		t = GetNextToken();
 
-		pi = searchSymbol(t, currentScope); // find class in root symbol table
+		pi = searchSymbol(t, currentScope);
 		if(pi.er != none)
 			return pi;
-			
-		if(isProgramWide(t) == 1)
+
+		if(hasSymbolTable(t) == 1)
 			objectScope = searchScope(t, currentScope); // find class symbol table
 
 		t = PeekNextToken();
@@ -1018,9 +1039,9 @@ ParserInfo Parse ()
 
 	pi = classDeclar(); 
 
-	printf("********************************\nCLASS WIDE SYMBOL TABLE FOR %s\n********************************\n", classTok.lx);
+	//printf("********************************\nCLASS WIDE SYMBOL TABLE FOR %s\n********************************\n", classTok.lx);
 
-	PrintSymbolTable(classScope);
+	//PrintSymbolTable(classScope);
 
 	return pi;
 }

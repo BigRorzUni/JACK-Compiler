@@ -50,7 +50,7 @@ add scaffold symbol output to parser
 int InitCompiler ()
 {
 	// make initial symbol table
-	printf("program wide symbol table created!\n");
+	//printf("program wide symbol table created!\n");
 	return 1;
 }
 
@@ -84,42 +84,67 @@ ParserInfo compile (char* dir_name)
 
 	root = CreateSymbolTable(NULL);
 
-	printf("\n\nSHALLOW PARSING EACH FILE\n\n\n");
+	//printf("\n\nSHALLOW PARSING EACH FILE\n\n\n");
 
 	// Add library files to the symbol table
+	
+	//p = ShallowPass("Pong/Ball.jack", root);
+
+	
+	// Parse each file
+    for (int i = 0;i < filePathIndex; i++) 
+	{
+		
+
+		//printf("\nSHALLOW PARSING %s\n", filePaths[i]);
+		//char* check = filePaths[i];
+		
+		
+		//fflush(stdout);
+		p = ShallowPass(filePaths[i], root);
+
+		if(p.er != none)
+		{
+			//printf("qhy has it stopped\n");
+			break;
+		}
+		
+		//printf("\n\n");
+	}
+
 	AddLibrarySymbols();
 
-	// Parse each file
-    for (int i = 0; i < filePathIndex; i++) 
-	{
-		printf("Shallow Parsing %s\n", filePaths[i]);
-		ShallowPass(filePaths[i], root);
-		printf("\n\n");
-	}
+	//*/
+
 
     rewinddir(dir);
 
-	PrintSymbolTable(root);
+	//PrintSymbolTable(root);
 
-	printf("\n\nSHALLOW PARSING COMPLETE\n\n======================================");
+	//printf("\n\nSHALLOW PARSING COMPLETE\n\n======================================");
 
-	printf("\n\nDEEP PARSING PONG/BALL.JACK\n\n\n");
+	//printf("\n\nDEEP PARSING PONG/BALL.JACK\n\n\n");
 
-	InitParser(filePaths[0]);
-	p = Parse();
-	StopParser();
+	//InitParser("Pong/Ball.jack");
+	//p = Parse();
+	//StopParser();
 
-/*
-	printf("\n\nDEEP PARSING EACH FILE\n\n\n");
+	//printf("\n\nDEEP PARSING EACH FILE\n\n\n");
+
 
 	for (int i = 0; i < filePathIndex; i++) 
 	{
+		if(p.er != none)
+		{
+			break;
+		}
+		//printf("\nDEEP PARSING %s\n", filePaths[i]);
 		InitParser(filePaths[i]);
 		p = Parse();
 		StopParser();
     }
-*/
-	printf("\n\nDEEP PARSING COMPLETE\n\n");
+	
+	//printf("\n\nDEEP PARSING COMPLETE\n\n");
 
 	//PrintSymbolTable(root);
 
@@ -196,10 +221,15 @@ void OutputError(ParserInfo p)
 
 
 #ifndef TEST_COMPILER
-int main ()
+int main(int argc, char *argv[])
 {
+    if(argc < 2) {
+        printf("Please provide a directory name.\n");
+        return 1;
+    }
 	InitCompiler ();
-	ParserInfo p = compile ("Pong");
+	//printf("--------------\n");
+	ParserInfo p = compile (argv[1]);
 	OutputError (p);
 	StopCompiler ();
 	return 1;

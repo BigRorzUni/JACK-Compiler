@@ -41,11 +41,14 @@ SymbolTable* ExitScope(SymbolTable* st);
 void InsertSymbol(SymbolTable* st, Token t, SymbolTable* scope, SymbolType sType, DataType dType);
 int FindSymbol(SymbolTable* st, Token t);
 void AddLibrarySymbols();
+int CheckScopeForSymbol(SymbolTable* st, Token t);
+
+void AssignScopeToInstance(SymbolTable* st, Token t, SymbolTable* scope);
 
 int TokenToDataType(Token t);
 
 void PrintSymbolTable(SymbolTable* st);
 
-void ShallowPass(char* filename, SymbolTable* st);
+ParserInfo ShallowPass(char* filename, SymbolTable* st);
 
 #endif
