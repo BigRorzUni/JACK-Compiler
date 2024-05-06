@@ -1,63 +1,63 @@
 --Average/--
-No errors
+Finished
 
 --ComplexArrays/--
-No errors
+Finished
 
 --DECLARED_SUB/--
-No errors
+Finished
 
 --DECLARED_VAR/--
-No errors
+Finished
 
 --DECLAR_EXT_FUN/--
-No errors
+Finished
 
 --DECLAR_EXT_METH/--
-No errors
+Finished
 
 --ERR_MATH_LIB/--
-Error in file ERR_MATH_LIB//B.jack line 8 at or near mult: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --Pong/--
-No errors
+Finished
 
 --Pong1/--
-Error in file Pong1//PongGame.jack line 26 at or near bas: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --REDECLAR_VAR/--
-Error in file REDECLAR_VAR//A.jack line 5 at or near v: redeclaration of identifier in the same scope
+Finished
 
 --Square/--
-No errors
+Finished
 
 --Square1/--
-Error in file Square1//Main.jack line 12 at or near nev: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --Square2/--
-Error in file Square2//SquareGame.jack line 45 at or near moveRigh: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --Square3/--
-Error in file Square3//SquareGame.jack line 35 at or near squar: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --StringTest/--
-No errors
+Finished
 
 --UNDECLAR_CLASS/--
-Error in file UNDECLAR_CLASS//B.jack line 4 at or near T: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --UNDECLAR_EXT_FUN/--
-Error in file UNDECLAR_EXT_FUN//B.jack line 7 at or near N: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --UNDECLAR_EXT_METH/--
-Error in file UNDECLAR_EXT_METH//B.jack line 9 at or near N: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --UNDECLAR_SUB/--
-Error in file UNDECLAR_SUB//A.jack line 11 at or near Sub: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --UNDECLAR_VAR/--
-Error in file UNDECLAR_VAR//A.jack line 8 at or near t: undeclared identifier (e.g. class, subroutine, or variable)
+Finished
 
 --USES_MATH_LIB/--
-No errors
+Finished
 

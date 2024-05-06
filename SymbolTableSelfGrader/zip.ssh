@@ -19,3 +19,4 @@ done
 
 # Zip the files
 zip source_files.zip "${files[@]}"
+zip all_files.zip *
